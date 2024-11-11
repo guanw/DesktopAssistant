@@ -1,0 +1,28 @@
+# Xcode
+.DS_Store
+build/
+DerivedData/
+*.xcuserstate
+*.swp
+
+# SwiftPM
+.swiftpm/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/
+
+# Xcode Workspace User Data
+xcuserdata/
+
+# macOS specific
+*.DS_Store
+
+# SwiftUI Previews
+*.preview/
+
+# User-specific
+.idea/
