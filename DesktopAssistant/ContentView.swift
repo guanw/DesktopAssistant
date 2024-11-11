@@ -6,6 +6,8 @@ struct ContentView: View {
     @State private var transcribedText = ""
     @State private var isRecording = false
     @State private var isAuthorized = false
+    @State private var messages: [Message] = []
+
     
     var body: some View {
         VStack(spacing: 20) {
@@ -13,12 +15,28 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .padding()
             
+            VStack {
+                ScrollViewReader { scrollView in
+                    ScrollView {
+                        VStack(alignment: .leading) {
+                            ForEach(messages) { message in
+                                ChatBubble(message: message)
+                            }
+                        }
+                    }
+                    .onChange(of: messages.count) {
+                        scrollView.scrollTo(messages.last?.id)
+                    }
+                }
+            }
+            .frame(width: 400, height: 500)
+            
             TextEditor(text: .constant(transcribedText))
                 .font(.body)
-                .frame(height: 200)
+                .frame(height: 50)
                 .padding()
                 .border(Color.gray, width: 1)
-            
+
             HStack(spacing: 20) {
                 Button(action: {
                     if !isRecording {
@@ -33,6 +51,10 @@ struct ContentView: View {
                         }
                     } else {
                         speechManager.stopRecording()
+                        if (!transcribedText.isEmpty) {
+                            messages.append(Message(text: transcribedText, isSender: true))
+                            messages.append(Message(text: transcribedText + " received", isSender: false))
+                        }
                     }
                     isRecording.toggle()
                 }) {
@@ -56,7 +78,7 @@ struct ContentView: View {
                     .padding()
             }
         }
-        .frame(width: 500, height: 400)
+        .frame(width: 500, height: 600)
         .padding()
         .onAppear {
             speechManager.requestAuthorization { authorized in
