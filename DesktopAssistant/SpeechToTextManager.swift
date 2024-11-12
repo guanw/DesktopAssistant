@@ -14,7 +14,7 @@ class SpeechToTextManager: NSObject, ObservableObject, SFSpeechRecognizerDelegat
         super.init()
         speechRecognizer.delegate = self
     }
-    
+
     func startRecording() throws {
         // Cancel any ongoing tasks
         if let recognitionTask = recognitionTask {
