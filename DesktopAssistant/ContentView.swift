@@ -70,13 +70,13 @@ struct ContentView: View {
                 } else {
                     speechManager.stopRecording()
                     if (!transcribedText.isEmpty) {
-                        messages.append(Message(text: transcribedText, isSender: true))
-                        apiClient.sendChatCompletionRequest(message: transcribedText, model: "llama3-8b-8192") { result in
+                        messages.append(Message(text: transcribedText, role: .User))
+                        apiClient.sendChatCompletionRequest(messages: messages, model: "llama3-8b-8192") { result in
                             switch result {
                             case .success(let result):
-                                messages.append(Message(text: result, isSender: false))
+                                messages.append(Message(text: result, role: .System))
                             case .failure(let error):
-                                messages.append(Message(text: "Error: \(error.localizedDescription)", isSender: false))
+                                messages.append(Message(text: "Error: \(error.localizedDescription)", role: .System))
                             }
                         }
                     }

@@ -5,7 +5,8 @@ struct ChatBubble: View {
     
     var body: some View {
         HStack {
-            if message.isSender {
+            switch message.role {
+            case .User:
                 Spacer()
                 Text(message.text)
                     .padding(10)
@@ -13,7 +14,7 @@ struct ChatBubble: View {
                     .foregroundColor(.white)
                     .cornerRadius(15)
                     .frame(maxWidth: 300, alignment: .trailing)
-            } else {
+            case .System:
                 Text(message.text)
                     .padding(10)
                     .background(Color.gray.opacity(0.2))
@@ -23,7 +24,7 @@ struct ChatBubble: View {
                 Spacer()
             }
         }
-        .padding(message.isSender ? .leading : .trailing, 50)
+        .padding(message.role == .User ? .leading : .trailing, 50)
         .padding(.vertical, 5)
     }
 }

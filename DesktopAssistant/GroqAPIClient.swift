@@ -8,7 +8,7 @@ class GroqAPIClient {
         self.apiKey = apiKey
     }
     
-    func sendChatCompletionRequest(message: String, model: String, completion: @escaping (Result<String, Error>) -> Void) {
+    func sendChatCompletionRequest(messages: [Message], model: String, completion: @escaping (Result<String, Error>) -> Void) {
         // Set up the URL
         guard let url = URL(string: baseURL) else {
             print("Invalid URL")
@@ -23,14 +23,17 @@ class GroqAPIClient {
         
         // Define the JSON body
         let body: [String: Any] = [
-            "messages": [
-                [
-                    "role": "user",
-                    "content": message
-                ]
-            ],
+            "messages":
+                messages.map { ["role": $0.role.rawValue, "content": $0.text] },
+//            [
+//                [
+//                    "role": "user",
+//                    "content": message
+//                ]
+//            ],
             "model": model
         ]
+        print(body)
         
         // Convert the JSON body to data
         do {
