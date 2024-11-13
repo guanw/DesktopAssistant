@@ -3,7 +3,6 @@ import Foundation
 class GroqAPIClient {
     private let apiKey: String
     private let baseURL = "https://api.groq.com/openai/v1/chat/completions"
-//    private let baseURL = "https://www.google.com/?q=hello"
     
     init(apiKey: String) {
         self.apiKey = apiKey
