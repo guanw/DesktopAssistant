@@ -50,6 +50,7 @@ struct ContentView: View {
     @State private var isAuthorized = false
     @State private var messages: [Message] = []
     @State private var showFloatingWindow = false
+    private let apiClient = GroqAPIClient(apiKey: "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")
 
     
     var body: some View {
@@ -70,7 +71,14 @@ struct ContentView: View {
                     speechManager.stopRecording()
                     if (!transcribedText.isEmpty) {
                         messages.append(Message(text: transcribedText, isSender: true))
-                        messages.append(Message(text: transcribedText + " received", isSender: false))
+                        apiClient.sendChatCompletionRequest(message: transcribedText, model: "llama3-8b-8192") { result in
+                            switch result {
+                            case .success(let result):
+                                messages.append(Message(text: result, isSender: false))
+                            case .failure(let error):
+                                messages.append(Message(text: "Error: \(error.localizedDescription)", isSender: false))
+                            }
+                        }
                     }
                 }
                 isRecording.toggle()
