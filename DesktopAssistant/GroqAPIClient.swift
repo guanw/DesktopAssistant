@@ -2,13 +2,15 @@ import Foundation
 
 class GroqAPIClient {
     private let apiKey: String
+    private let model: String
     private let baseURL = "https://api.groq.com/openai/v1/chat/completions"
     
-    init(apiKey: String) {
+    init(apiKey: String, model: String) {
         self.apiKey = apiKey
+        self.model = model
     }
     
-    func sendChatCompletionRequest(messages: [Message], model: String, completion: @escaping (Result<String, Error>) -> Void) {
+    func sendChatCompletionRequest(messages: [any MessageProtocol], completion: @escaping (Result<String, Error>) -> Void) {
         // Set up the URL
         guard let url = URL(string: baseURL) else {
             print("Invalid URL")
@@ -24,14 +26,8 @@ class GroqAPIClient {
         // Define the JSON body
         let body: [String: Any] = [
             "messages":
-                messages.map { ["role": $0.role.rawValue, "content": $0.text] },
-//            [
-//                [
-//                    "role": "user",
-//                    "content": message
-//                ]
-//            ],
-            "model": model
+                self.formatMessages(messages: messages),
+            "model": self.model
         ]
         print(body)
         
@@ -72,6 +68,23 @@ class GroqAPIClient {
         task.resume()
     }
     
+    func formatMessages(messages: [any MessageProtocol]) -> [[String : Any]] {
+        if let messageArray = messages as? [Message] {
+            return messageArray.map { ["role": $0.role.rawValue, "content": $0.text] }
+        } else if let messageArray = messages as? [MultiModalMessage] {
+            return messageArray.map { ["role": $0.role.rawValue, "content": $0.content.map { content in
+                var res: [String: Any] = ["type": content.type.rawValue]
+                if let text = content.text {
+                    res["text"] = text
+                } else if let imageUrl = content.imageUrl {
+                    res["image_url"] = ["url": imageUrl]
+                }
+                return res
+            } ] }
+        }
+        return [[:]]
+    }
+
     func parseChatCompletionResponse(data: Data) throws -> String {
         let decoder = JSONDecoder()
         let response = try decoder.decode(GroqChatCompletionResponse.self, from: data)

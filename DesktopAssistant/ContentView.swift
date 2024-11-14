@@ -43,6 +43,9 @@ class KeyPressResponderView: NSView {
     }
 }
 
+let MULTI_MODAL_MODEL = "llama-3.2-90b-vision-preview"
+let STABLE_MODEL = "llama3-8b-8192"
+
 struct ContentView: View {
     @StateObject private var speechManager = SpeechToTextManager()
     @State private var transcribedText = ""
@@ -50,7 +53,7 @@ struct ContentView: View {
     @State private var isAuthorized = false
     @State private var messages: [Message] = []
     @State private var showFloatingWindow = false
-    private let apiClient = GroqAPIClient(apiKey: "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")
+    private let apiClient = GroqAPIClient(apiKey: "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", model: STABLE_MODEL)
 
     
     var body: some View {
@@ -71,7 +74,7 @@ struct ContentView: View {
                     speechManager.stopRecording()
                     if (!transcribedText.isEmpty) {
                         messages.append(Message(text: transcribedText, role: .User))
-                        apiClient.sendChatCompletionRequest(messages: messages, model: "llama3-8b-8192") { result in
+                        apiClient.sendChatCompletionRequest(messages: messages) { result in
                             switch result {
                             case .success(let result):
                                 messages.append(Message(text: result, role: .System))
