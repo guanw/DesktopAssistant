@@ -16,6 +16,8 @@ class SpeechToTextManager: NSObject, ObservableObject, SFSpeechRecognizerDelegat
     }
 
     func startRecording() throws {
+        Logger.shared.log("start recording")
+
         // Cancel any ongoing tasks
         if let recognitionTask = recognitionTask {
             recognitionTask.cancel()
@@ -57,6 +59,7 @@ class SpeechToTextManager: NSObject, ObservableObject, SFSpeechRecognizerDelegat
     }
     
     func stopRecording() {
+        Logger.shared.log("stop recording")
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()

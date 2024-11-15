@@ -29,7 +29,7 @@ class KeyPressResponderView: NSView {
 
         // Detect Command + L keypress
         if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "l" {
-            print("Command + L pressed")
+            Logger.shared.log("Command + L pressed")
             onKeyPress?()  // Trigger the passed callback
         }
     }
@@ -68,7 +68,7 @@ struct ContentView: View {
                         }
                         try speechManager.startRecording()
                     } catch {
-                        print("Failed to start recording: \(error)")
+                        Logger.shared.log("Failed to start recording: \(error)")
                     }
                 } else {
                     speechManager.stopRecording()

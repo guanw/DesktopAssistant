@@ -13,10 +13,10 @@ class GroqAPIClient {
     func sendChatCompletionRequest(messages: [any MessageProtocol], completion: @escaping (Result<String, Error>) -> Void) {
         // Set up the URL
         guard let url = URL(string: baseURL) else {
-            print("Invalid URL")
+            Logger.shared.log("Invalid URL: " + baseURL)
             return
         }
-        
+
         // Create the request
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -29,7 +29,6 @@ class GroqAPIClient {
                 self.formatMessages(messages: messages),
             "model": self.model
         ]
-        print(body)
         
         // Convert the JSON body to data
         do {
