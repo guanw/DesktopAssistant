@@ -14,7 +14,7 @@ struct ChatBubble: View {
                     .padding(10)
                     .background(Color.blue)
                     .foregroundColor(.white)
-                    .cornerRadius(15)
+                    .cornerRadius(10)
                     .frame(maxWidth: 300, alignment: .trailing)
             case .System:
                 Spacer()
@@ -22,8 +22,7 @@ struct ChatBubble: View {
                     Text(message.text)
                         .padding(10)
                         .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.black)
-                        .cornerRadius(15)
+                        .cornerRadius(10)
                         .frame(maxWidth: 300, alignment: .leading)
                     Button(action: {
                         copyToClipboard(message.text)

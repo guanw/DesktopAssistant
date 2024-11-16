@@ -57,7 +57,7 @@ struct ContentView: View {
 
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 10) {
             KeyPressResponder {
                 // Start/Stop speech recording on Command+L press
                 if !isRecording {
@@ -82,46 +82,56 @@ struct ContentView: View {
                                 messages.append(Message(text: "Error: \(error.localizedDescription)", role: .System))
                             }
                         }
+                        transcribedText = ""
                     }
                 }
                 isRecording.toggle()
             }
             .frame(width: 0, height: 0)
-
-            Text("Voice Recognition")
-                .font(.largeTitle)
-                .padding()
             
             // chat history
             VStack {
                 ScrollViewReader { scrollView in
                     ScrollView {
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 10) {
                             ForEach(messages) { message in
                                 ChatBubble(message: message)
+                                    .padding(5)
                             }
-                        }
+                        }.padding()
                     }
                     .onChange(of: messages.count) {
                         scrollView.scrollTo(messages.last?.id)
                     }
                 }
             }
-            .frame(width: 400, height: 500)
+            .frame(width: 400, height: 400)
+            .background(Color.black)
+            .cornerRadius(12)
+            .shadow(radius: 5)
             
             // current translated text
-            TextEditor(text: .constant(transcribedText))
-                .font(.body)
-                .frame(height: 50)
-                .padding()
-                .border(Color.gray, width: 1)
+            ZStack {
+                if isRecording && transcribedText.isEmpty {
+                    ThreeDotsLoading() // Show loading animation
+                        .frame(width: 100, height: 30)
+                } else if (isRecording) {
+                    TextEditor(text: .constant(transcribedText))
+                        .font(.body)
+                        .frame(width: 400, height: 50)
+                        .padding()
+                        .cornerRadius(8)
+                        .shadow(radius: 3)
+                }
+            }
 
             HStack(spacing: 20) {
                 if isRecording {
                     Text("Recording...")
                         .foregroundColor(.red)
                 } else {
-                    Text("Stopped... press CMD+l and start talking")
+                    Text("Press CMD+l and start talking")
+                        .foregroundColor(.gray)
                 }
             }
             
@@ -133,6 +143,8 @@ struct ContentView: View {
         }
         .frame(width: 500, height: 600)
         .padding()
+        .background(Color.gray.opacity(0.2))
+        .cornerRadius(12)
         .onAppear {
             speechManager.requestAuthorization { authorized in
                 isAuthorized = authorized
