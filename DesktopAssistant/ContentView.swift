@@ -57,7 +57,7 @@ struct ContentView: View {
 
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack() {
             KeyPressResponder {
                 // Start/Stop speech recording on Command+L press
                 if !isRecording {
@@ -93,12 +93,12 @@ struct ContentView: View {
             VStack {
                 ScrollViewReader { scrollView in
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading) {
                             ForEach(messages) { message in
                                 ChatBubble(message: message)
                                     .padding(5)
                             }
-                        }.padding()
+                        }
                     }
                     .onChange(of: messages.count) {
                         scrollView.scrollTo(messages.last?.id)
@@ -119,8 +119,8 @@ struct ContentView: View {
                     TextEditor(text: .constant(transcribedText))
                         .font(.body)
                         .frame(width: 400, height: 50)
-                        .padding()
                         .cornerRadius(8)
+                        .padding()
                         .shadow(radius: 3)
                 }
             }
@@ -133,16 +133,14 @@ struct ContentView: View {
                     Text("Press CMD+l and start talking")
                         .foregroundColor(.gray)
                 }
-            }
+            }.padding()
             
             if !isAuthorized {
                 Text("Please enable speech recognition permission in System Settings")
                     .foregroundColor(.red)
-                    .padding()
             }
         }
         .frame(width: 500, height: 600)
-        .padding()
         .background(Color.gray.opacity(0.2))
         .cornerRadius(12)
         .onAppear {
