@@ -10,7 +10,7 @@ class GroqAPIClient {
         self.model = model
     }
     
-    func sendChatCompletionRequest(messages: [any MessageProtocol], completion: @escaping (Result<String, Error>) -> Void) {
+    func sendChatCompletionRequest(messages: [ChatMessage], completion: @escaping (Result<String, Error>) -> Void) {
         // Set up the URL
         guard let url = URL(string: baseURL) else {
             Logger.shared.log("Invalid URL: " + baseURL)
@@ -23,12 +23,7 @@ class GroqAPIClient {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        // Define the JSON body
-        let body: [String: Any] = [
-            "messages":
-                self.formatMessages(messages: messages),
-            "model": self.model
-        ]
+        let body = self.formatBody(messages: messages)
         
         // Convert the JSON body to data
         do {
@@ -67,21 +62,33 @@ class GroqAPIClient {
         task.resume()
     }
     
-    func formatMessages(messages: [any MessageProtocol]) -> [[String : Any]] {
-        if let messageArray = messages as? [Message] {
-            return messageArray.map { ["role": $0.role.rawValue, "content": $0.text] }
-        } else if let messageArray = messages as? [MultiModalMessage] {
-            return messageArray.map { ["role": $0.role.rawValue, "content": $0.content.map { content in
-                var res: [String: Any] = ["type": content.type.rawValue]
-                if let text = content.text {
-                    res["text"] = text
-                } else if let imageUrl = content.imageUrl {
-                    res["image_url"] = ["url": imageUrl]
-                }
-                return res
-            } ] }
+    func formatBody(messages: [ChatMessage]) -> [String: Any] {
+        let formattedMessages = self.formatMessages(messages: messages)
+        return [
+            "messages": formattedMessages,
+            "model": self.model
+        ]
+    }
+    
+    func formatMessages(messages: [ChatMessage]) -> [[String : Any]] {
+        return messages.map {
+            (message: ChatMessage) in
+            switch message {
+            case .message(let message):
+                return ["role": message.role.rawValue, "content": message.text]
+            case .multiModalMessage(let multiModalMessage):
+                return ["role": multiModalMessage.role.rawValue, "content": multiModalMessage.content.map {
+                    content in
+                    var res: [String: Any] = ["type": content.type.rawValue]
+                    if let text = content.text {
+                        res["text"] = text
+                    } else if let imageUrl = content.imageUrl {
+                        res["image_url"] = ["url": imageUrl]
+                    }
+                    return res
+                }]
+            }
         }
-        return [[:]]
     }
 
     func parseChatCompletionResponse(data: Data) throws -> String {

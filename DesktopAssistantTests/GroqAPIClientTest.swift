@@ -13,9 +13,9 @@ struct GroqAPIClientTest {
     }
     
     @Test func testFormatMessagesWithMessages() async throws {
-        let messages = [
-            Message(text: "test1", role: Role.User),
-            Message(text: "test2", role: Role.System),
+        let messages: [ChatMessage] = [
+            .message(Message(text: "test1", role: Role.User)),
+            .message(Message(text: "test2", role: Role.System)),
         ]
         let res = apiClient.formatMessages(messages: messages)
         XCTAssertEqual(res.count, 2)
@@ -27,9 +27,9 @@ struct GroqAPIClientTest {
     }
 
     @Test func testFormatMessagesWithMultiModalMessages() async throws {
-        let messages = [
-            MultiModalMessage(role: Role.User, content: [MultiModalMessageContent(text: "test")]),
-            MultiModalMessage(role: Role.System, content: [MultiModalMessageContent(imageUrl: "test_url")]),
+        let messages: [ChatMessage] = [
+            .multiModalMessage(MultiModalMessage(role: Role.User, content: [MultiModalMessageContent(text: "test")])),
+            .multiModalMessage(MultiModalMessage(role: Role.System, content: [MultiModalMessageContent(imageUrl: "test_url")])),
         ]
         let res = apiClient.formatMessages(messages: messages)
         XCTAssertEqual(res.count, 2)

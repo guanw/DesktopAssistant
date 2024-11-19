@@ -45,15 +45,16 @@ class KeyPressResponderView: NSView {
 
 let MULTI_MODAL_MODEL = "llama-3.2-90b-vision-preview"
 let STABLE_MODEL = "llama3-8b-8192"
+let model = MULTI_MODAL_MODEL
 
 struct ContentView: View {
     @StateObject private var speechManager = SpeechToTextManager()
     @State private var transcribedText = ""
     @State private var isRecording = false
     @State private var isAuthorized = false
-    @State private var messages: [Message] = []
+    @State private var messages: [ChatMessage] = []
     @State private var showFloatingWindow = false
-    private let apiClient = GroqAPIClient(apiKey: "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", model: STABLE_MODEL)
+    private let apiClient = GroqAPIClient(apiKey: "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", model: model)
 
     
     var body: some View {
@@ -99,13 +100,13 @@ struct ContentView: View {
         } else {
             speechManager.stopRecording()
             if (!transcribedText.isEmpty) {
-                messages.append(Message(text: transcribedText, role: .User))
+                self.createInput(transcribedText: transcribedText)
                 apiClient.sendChatCompletionRequest(messages: messages) { result in
                     switch result {
                     case .success(let result):
-                        messages.append(Message(text: result, role: .System))
+                        messages.append(.message(Message(text: result, role: .System)))
                     case .failure(let error):
-                        messages.append(Message(text: "Error: \(error.localizedDescription)", role: .System))
+                        messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                     }
                 }
                 transcribedText = ""
@@ -119,14 +120,15 @@ struct ContentView: View {
             ScrollViewReader { scrollView in
                 ScrollView {
                     VStack(alignment: .leading) {
-                        ForEach(messages) { message in
-                            ChatBubble(message: message)
-                                .padding(5)
+                        ForEach(messages, id: \.id) { chatMessage in
+                            messageView(for: chatMessage)
                         }
                     }
                 }
-                .onChange(of: messages.count) {
-                    scrollView.scrollTo(messages.last?.id)
+                .onChange(of: messages.count) { _ in
+                    if let lastMessageId = messages.last?.id {
+                        scrollView.scrollTo(lastMessageId)
+                    }
                 }
             }
         }
@@ -134,6 +136,15 @@ struct ContentView: View {
         .background(Color.black)
         .cornerRadius(12)
         .shadow(radius: 5)
+    }
+    
+    private func messageView(for chatMessage: ChatMessage) -> AnyView {
+        switch chatMessage {
+        case .message(let message):
+            return AnyView(ChatBubble(message: message).padding(5))
+        case .multiModalMessage(let multiModalMessage):
+            return AnyView(ChatBubble(message: Message(text: multiModalMessage.content.first?.text ?? "", role: .User)).padding(5))
+        }
     }
 
     private func translatedText() -> some View {
@@ -162,5 +173,17 @@ struct ContentView: View {
                     .foregroundColor(.gray)
             }
         }.padding()
+    }
+    
+    func createInput(transcribedText: String) {
+        if model == STABLE_MODEL {
+            messages.append(.message(Message(text: transcribedText, role: .User)))
+        } else if model == MULTI_MODAL_MODEL {
+            messages.append(
+                .multiModalMessage(
+                    MultiModalMessage(role: .User, content: [MultiModalMessageContent(text: transcribedText)])
+                )
+            )
+        }
     }
 }

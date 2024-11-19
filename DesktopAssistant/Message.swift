@@ -1,12 +1,28 @@
 import Foundation
 
+enum ChatMessage: Identifiable {
+    case message(Message)
+    case multiModalMessage(MultiModalMessage)
+
+    var id: UUID {
+        switch self {
+        case .message(let message):
+            return message.id
+        case .multiModalMessage(let multiModalMessage):
+            return multiModalMessage.id
+        }
+    }
+}
+
 protocol MessageProtocol: Identifiable {
+    var id: UUID { get }
     var role: Role { get }
 }
 
 enum Role: String {
     case User = "user"
     case System = "system"
+    case Assistant = "assistant"
 }
 
 struct Message: Identifiable, MessageProtocol {
