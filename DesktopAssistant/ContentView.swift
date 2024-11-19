@@ -59,81 +59,15 @@ struct ContentView: View {
     var body: some View {
         VStack() {
             KeyPressResponder {
-                // Start/Stop speech recording on Command+L press
-                if !isRecording {
-                    transcribedText = ""
-                    do {
-                        speechManager.onTranscription = { text in
-                            transcribedText = text
-                        }
-                        try speechManager.startRecording()
-                    } catch {
-                        Logger.shared.log("Failed to start recording: \(error)")
-                    }
-                } else {
-                    speechManager.stopRecording()
-                    if (!transcribedText.isEmpty) {
-                        messages.append(Message(text: transcribedText, role: .User))
-                        apiClient.sendChatCompletionRequest(messages: messages) { result in
-                            switch result {
-                            case .success(let result):
-                                messages.append(Message(text: result, role: .System))
-                            case .failure(let error):
-                                messages.append(Message(text: "Error: \(error.localizedDescription)", role: .System))
-                            }
-                        }
-                        transcribedText = ""
-                    }
-                }
-                isRecording.toggle()
+                handleKeyPress()
             }
             .frame(width: 0, height: 0)
             
-            // chat history
-            VStack {
-                ScrollViewReader { scrollView in
-                    ScrollView {
-                        VStack(alignment: .leading) {
-                            ForEach(messages) { message in
-                                ChatBubble(message: message)
-                                    .padding(5)
-                            }
-                        }
-                    }
-                    .onChange(of: messages.count) {
-                        scrollView.scrollTo(messages.last?.id)
-                    }
-                }
-            }
-            .frame(width: 400, height: 400)
-            .background(Color.black)
-            .cornerRadius(12)
-            .shadow(radius: 5)
+            chatHistory()
             
-            // current translated text
-            ZStack {
-                if isRecording && transcribedText.isEmpty {
-                    ThreeDotsLoading() // Show loading animation
-                        .frame(width: 100, height: 30)
-                } else if (isRecording) {
-                    TextEditor(text: .constant(transcribedText))
-                        .font(.body)
-                        .frame(width: 400, height: 50)
-                        .cornerRadius(8)
-                        .padding()
-                        .shadow(radius: 3)
-                }
-            }
+            translatedText()
 
-            HStack(spacing: 20) {
-                if isRecording {
-                    Text("Recording...")
-                        .foregroundColor(.red)
-                } else {
-                    Text("Press CMD+l and start talking")
-                        .foregroundColor(.gray)
-                }
-            }.padding()
+            recordingStateIndicator()
             
             if !isAuthorized {
                 Text("Please enable speech recognition permission in System Settings")
@@ -148,5 +82,85 @@ struct ContentView: View {
                 isAuthorized = authorized
             }
         }
+    }
+
+    private func handleKeyPress() {
+        // Start/Stop speech recording on Command+L press
+        if !isRecording {
+            transcribedText = ""
+            do {
+                speechManager.onTranscription = { text in
+                    transcribedText = text
+                }
+                try speechManager.startRecording()
+            } catch {
+                Logger.shared.log("Failed to start recording: \(error)")
+            }
+        } else {
+            speechManager.stopRecording()
+            if (!transcribedText.isEmpty) {
+                messages.append(Message(text: transcribedText, role: .User))
+                apiClient.sendChatCompletionRequest(messages: messages) { result in
+                    switch result {
+                    case .success(let result):
+                        messages.append(Message(text: result, role: .System))
+                    case .failure(let error):
+                        messages.append(Message(text: "Error: \(error.localizedDescription)", role: .System))
+                    }
+                }
+                transcribedText = ""
+            }
+        }
+        isRecording.toggle()
+    }
+
+    private func chatHistory() -> some View {
+        return VStack {
+            ScrollViewReader { scrollView in
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        ForEach(messages) { message in
+                            ChatBubble(message: message)
+                                .padding(5)
+                        }
+                    }
+                }
+                .onChange(of: messages.count) {
+                    scrollView.scrollTo(messages.last?.id)
+                }
+            }
+        }
+        .frame(width: 400, height: 400)
+        .background(Color.black)
+        .cornerRadius(12)
+        .shadow(radius: 5)
+    }
+
+    private func translatedText() -> some View {
+        return ZStack {
+            if isRecording && transcribedText.isEmpty {
+                ThreeDotsLoading() // Show loading animation
+                    .frame(width: 100, height: 30)
+            } else if (isRecording) {
+                TextEditor(text: .constant(transcribedText))
+                    .font(.body)
+                    .frame(width: 400, height: 50)
+                    .cornerRadius(8)
+                    .padding()
+                    .shadow(radius: 3)
+            }
+        }
+    }
+
+    private func recordingStateIndicator() -> some View {
+        return HStack(spacing: 20) {
+            if isRecording {
+                Text("Recording...")
+                    .foregroundColor(.red)
+            } else {
+                Text("Press CMD+l and start talking")
+                    .foregroundColor(.gray)
+            }
+        }.padding()
     }
 }
