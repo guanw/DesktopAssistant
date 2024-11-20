@@ -153,11 +153,11 @@ struct ContentView: View {
                 ThreeDotsLoading() // Show loading animation
                     .frame(width: 100, height: 30)
             } else if (isRecording) {
-                TextEditor(text: .constant(transcribedText))
+                Text("You said: " + transcribedText)
                     .font(.body)
                     .frame(width: 400, height: 50)
                     .cornerRadius(8)
-                    .padding(.vertical, 15)
+                    .padding(8)
                     .shadow(radius: 3)
                     .multilineTextAlignment(.center)
             }
@@ -170,7 +170,7 @@ struct ContentView: View {
                 Text("Recording...")
                     .foregroundColor(.red)
             } else {
-                Text("Press CMD+l and start talking")
+                Text("Press CMD+l and start talking, press again to stop")
                     .foregroundColor(.gray)
             }
         }.padding()
