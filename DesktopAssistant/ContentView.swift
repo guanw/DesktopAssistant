@@ -157,8 +157,9 @@ struct ContentView: View {
                     .font(.body)
                     .frame(width: 400, height: 50)
                     .cornerRadius(8)
-                    .padding()
+                    .padding(.vertical, 15)
                     .shadow(radius: 3)
+                    .multilineTextAlignment(.center)
             }
         }
     }
