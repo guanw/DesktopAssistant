@@ -14,6 +14,9 @@ struct ChatBubble: View {
             case .System:
                 Spacer()
                 systemBubble
+            case .Assistant:
+                Spacer()
+                systemBubble
             }
         }
         .padding(message.role == .User ? .leading : .trailing, 50)
