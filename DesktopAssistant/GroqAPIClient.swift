@@ -64,7 +64,7 @@ class GroqAPIClient {
     
     func formatBody(messages: [ChatMessage]) -> [String: Any] {
         var formattedMessages = self.formatMessages(messages: messages)
-        formattedMessages = self.appendAssistantMessage(body: formattedMessages)
+        formattedMessages = self.appendAssistantMessage(body: formattedMessages, latestMessage: messages.last)
         return [
             "messages": formattedMessages,
             "model": self.model
@@ -96,10 +96,22 @@ class GroqAPIClient {
         }
     }
 
-    func appendAssistantMessage(body: [[String : Any]]) -> [[String : Any]] {
+    func appendAssistantMessage(body: [[String : Any]], latestMessage: ChatMessage?) -> [[String : Any]] {
         var messages = body
+
         // add assistant to messages
-        messages.append(["role": "assistant", "content": "make sure if the user is asking you to generate some code, just output the code itself, don't add any non-code context"])
+        var lastMessageUnzipped = ""
+        switch latestMessage {
+        case .message(let message):
+            lastMessageUnzipped = message.text
+        case .multiModalMessage(let multiModalMessage):
+            lastMessageUnzipped = multiModalMessage.content.first?.text ?? ""
+        default:
+            lastMessageUnzipped = ""
+        }
+        if (lastMessageUnzipped.lowercased().contains("code")) {
+            messages.append(["role": "assistant", "content": "make sure if the user is asking you to generate some code, just output the code itself, don't add any non-code context. But please only do this if you see keyword code from message"])
+        }
 
         return messages;
     }
