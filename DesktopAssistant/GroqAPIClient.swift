@@ -63,32 +63,45 @@ class GroqAPIClient {
     }
     
     func formatBody(messages: [ChatMessage]) -> [String: Any] {
-        let formattedMessages = self.formatMessages(messages: messages)
+        var formattedMessages = self.formatMessages(messages: messages)
+        formattedMessages = self.appendAssistantMessage(body: formattedMessages)
         return [
             "messages": formattedMessages,
             "model": self.model
         ]
     }
-    
+
     func formatMessages(messages: [ChatMessage]) -> [[String : Any]] {
-        return messages.map {
-            (message: ChatMessage) in
+        return messages.map { (message: ChatMessage) in
             switch message {
             case .message(let message):
-                return ["role": message.role.rawValue, "content": message.text]
+                return [
+                    "role": message.role.rawValue,
+                    "content": message.text
+                ]
             case .multiModalMessage(let multiModalMessage):
-                return ["role": multiModalMessage.role.rawValue, "content": multiModalMessage.content.map {
-                    content in
-                    var res: [String: Any] = ["type": content.type.rawValue]
-                    if let text = content.text {
-                        res["text"] = text
-                    } else if let imageUrl = content.imageUrl {
-                        res["image_url"] = ["url": imageUrl]
+                return [
+                    "role": multiModalMessage.role.rawValue,
+                    "content": multiModalMessage.content.map { content in
+                        var res: [String: Any] = ["type": content.type.rawValue]
+                        if let text = content.text {
+                            res["text"] = text
+                        } else if let imageUrl = content.imageUrl {
+                            res["image_url"] = ["url": imageUrl]
+                        }
+                        return res
                     }
-                    return res
-                }]
+                ]
             }
         }
+    }
+
+    func appendAssistantMessage(body: [[String : Any]]) -> [[String : Any]] {
+        var messages = body
+        // add assistant to messages
+        messages.append(["role": "assistant", "content": "make sure if the user is asking you to generate some code, just output the code itself, don't add any non-code context"])
+
+        return messages;
     }
 
     func parseChatCompletionResponse(data: Data) throws -> String {
