@@ -35,7 +35,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "63AE3F382CE1795900324A50"
+               BlueprintIdentifier = "63AE3F702CE689E200324A50"
                BuildableName = "DesktopAssistantTests.xctest"
                BlueprintName = "DesktopAssistantTests"
                ReferencedContainer = "container:DesktopAssistant.xcodeproj">

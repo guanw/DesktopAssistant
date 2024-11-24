@@ -54,6 +54,7 @@ struct ContentView: View {
     @State private var isAuthorized = false
     @State private var messages: [ChatMessage] = []
     @State private var showFloatingWindow = false
+    @State private var selectedFileName = ""
     private let apiClient = GroqAPIClient(apiKey: "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", model: model)
 
     
@@ -65,7 +66,9 @@ struct ContentView: View {
             .frame(width: 0, height: 0)
             
             chatHistory()
-            
+
+            imageAttachment()
+
             translatedText()
 
             recordingStateIndicator()
@@ -144,6 +147,39 @@ struct ContentView: View {
             return AnyView(ChatBubble(message: message).padding(5))
         case .multiModalMessage(let multiModalMessage):
             return AnyView(ChatBubble(message: Message(text: multiModalMessage.content.first?.text ?? "", role: .User)).padding(5))
+        }
+    }
+
+    private func imageAttachment() -> some View {
+        return Button(action: {
+            openImagePicker()
+        }) {
+            HStack {
+                Image(systemName: "paperclip.circle")
+                    .resizable()
+                    .frame(width: 24, height: 24)
+                Text(
+                    self.selectedFileName.isEmpty ? "Attach Image": "Attach Image: " + self.selectedFileName
+                )
+            }
+        }
+        .buttonStyle(BorderlessButtonStyle())
+    }
+
+    private func openImagePicker() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [UTType.jpeg] // Allow image file types
+        openPanel.allowsMultipleSelection = false // Single file selection
+        openPanel.canChooseDirectories = false
+        openPanel.canCreateDirectories = false
+        openPanel.title = "Select an Image (jpeg)"
+
+        if openPanel.runModal() == .OK, let selectedFileURL = openPanel.url {
+            if let _ = NSImage(contentsOf: selectedFileURL) {
+                self.selectedFileName = selectedFileURL.lastPathComponent
+            } else {
+                Logger.shared.log("Failed to load image")
+            }
         }
     }
 
