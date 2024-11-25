@@ -54,7 +54,7 @@ struct ContentView: View {
     @State private var isAuthorized = false
     @State private var messages: [ChatMessage] = []
     @State private var showFloatingWindow = false
-    @State private var selectedFileName = ""
+    @State private var selectedFileUrl: URL? = nil
     private let apiClient = GroqAPIClient(apiKey: "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", model: model)
 
     
@@ -151,6 +151,14 @@ struct ContentView: View {
     }
 
     private func imageAttachment() -> some View {
+        let content =
+        {
+            if let text = self.selectedFileUrl?.lastPathComponent {
+                return "Attach Image: " + text
+            } else {
+                return "Attach Image"
+            }
+        }()
         return Button(action: {
             openImagePicker()
         }) {
@@ -158,8 +166,9 @@ struct ContentView: View {
                 Image(systemName: "paperclip.circle")
                     .resizable()
                     .frame(width: 24, height: 24)
+
                 Text(
-                    self.selectedFileName.isEmpty ? "Attach Image": "Attach Image: " + self.selectedFileName
+                    content
                 )
             }
         }
@@ -176,7 +185,7 @@ struct ContentView: View {
 
         if openPanel.runModal() == .OK, let selectedFileURL = openPanel.url {
             if let _ = NSImage(contentsOf: selectedFileURL) {
-                self.selectedFileName = selectedFileURL.lastPathComponent
+                self.selectedFileUrl = selectedFileURL
             } else {
                 Logger.shared.log("Failed to load image")
             }
@@ -216,11 +225,25 @@ struct ContentView: View {
         if model == STABLE_MODEL {
             messages.append(.message(Message(text: transcribedText, role: .User)))
         } else if model == MULTI_MODAL_MODEL {
+            var content = [MultiModalMessageContent(text: transcribedText)]
+            if let selectedFileUrl = self.selectedFileUrl {
+                let imageUrl = ImageUtil.encodeImageToBase64(
+                    imagePath: selectedFileUrl.path()
+                )
+                if let imageUrl = imageUrl {
+                    content.append(
+                        MultiModalMessageContent(
+                            imageUrl: imageUrl
+                        )
+                    )
+                }
+            }
             messages.append(
                 .multiModalMessage(
-                    MultiModalMessage(role: .User, content: [MultiModalMessageContent(text: transcribedText)])
+                    MultiModalMessage(role: .User, content: content)
                 )
             )
+
         }
     }
 }

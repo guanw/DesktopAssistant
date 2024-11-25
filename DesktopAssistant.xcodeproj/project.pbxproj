@@ -21,33 +21,9 @@
 		63AE3F712CE689E200324A50 /* DesktopAssistantTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DesktopAssistantTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		63AE3FA22CF2B39F00324A50 /* Exceptions for "DesktopAssistant" folder in "DesktopAssistant" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				ImageUtil.swift,
-			);
-			target = 63AE3F272CE1795700324A50 /* DesktopAssistant */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		63AE3FA32CF2B39F00324A50 /* Exceptions for "DesktopAssistant" folder in "Copy Bundle Resources" phase from "DesktopAssistant" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = 63AE3F262CE1795700324A50 /* Resources */;
-			membershipExceptions = (
-				ImageUtil.swift,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		63AE3F2A2CE1795700324A50 /* DesktopAssistant */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				63AE3FA22CF2B39F00324A50 /* Exceptions for "DesktopAssistant" folder in "DesktopAssistant" target */,
-				63AE3FA32CF2B39F00324A50 /* Exceptions for "DesktopAssistant" folder in "Copy Bundle Resources" phase from "DesktopAssistant" target */,
-			);
 			path = DesktopAssistant;
 			sourceTree = "<group>";
 		};
