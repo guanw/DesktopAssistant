@@ -32,6 +32,11 @@ class KeyPressResponderView: NSView {
             Logger.shared.log("Command + L pressed")
             onKeyPress?()  // Trigger the passed callback
         }
+
+        if event.keyCode == 53 {
+            Logger.shared.log("Esc key pressed")
+            TextToSpeech.shared.stop()
+        }
     }
 
     override var acceptsFirstResponder: Bool {
@@ -59,7 +64,6 @@ struct ContentView: View {
     @State private var isScreenshotClickableHovered = false
     @State private var waitingForReply = false
     private let apiClient = GroqAPIClient(apiKey: "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", model: model)
-    private let tts = TextToSpeech()
 
     var body: some View {
         VStack() {
@@ -117,7 +121,7 @@ struct ContentView: View {
                     switch result {
                     case .success(let result):
                         messages.append(.message(Message(text: result, role: .System)))
-                        tts.speak(result)
+                        TextToSpeech.shared.speak(result)
                     case .failure(let error):
                         messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                     }

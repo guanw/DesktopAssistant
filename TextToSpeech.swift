@@ -1,8 +1,9 @@
 import AVFoundation
 
 class TextToSpeech {
-    private let synthesizer = AVSpeechSynthesizer()
-    
+    static let shared = TextToSpeech()
+    private var synthesizer = AVSpeechSynthesizer()
+
     func speak(_ text: String) {
         // Create a speech utterance with the provided text
         let utterance = AVSpeechUtterance(string: text)
@@ -12,5 +13,11 @@ class TextToSpeech {
         
         // Speak the utterance
         synthesizer.speak(utterance)
+    }
+
+    func stop() {
+        if (synthesizer.isSpeaking) {
+            synthesizer.stopSpeaking(at: AVSpeechBoundary.word)
+        }
     }
 }
