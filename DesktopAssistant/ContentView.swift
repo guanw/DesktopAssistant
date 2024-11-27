@@ -59,8 +59,8 @@ struct ContentView: View {
     @State private var isScreenshotClickableHovered = false
     @State private var waitingForReply = false
     private let apiClient = GroqAPIClient(apiKey: "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", model: model)
+    private let tts = TextToSpeech()
 
-    
     var body: some View {
         VStack() {
             KeyPressResponder {
@@ -117,6 +117,7 @@ struct ContentView: View {
                     switch result {
                     case .success(let result):
                         messages.append(.message(Message(text: result, role: .System)))
+                        tts.speak(result)
                     case .failure(let error):
                         messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                     }

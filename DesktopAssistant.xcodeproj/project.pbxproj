@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		631F95612CF76A0B00AFE273 /* TextToSpeech.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631F95602CF76A0B00AFE273 /* TextToSpeech.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		63AE3F752CE689E200324A50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -17,6 +21,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		631F95602CF76A0B00AFE273 /* TextToSpeech.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToSpeech.swift; sourceTree = "<group>"; };
 		63AE3F282CE1795700324A50 /* DesktopAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DesktopAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63AE3F712CE689E200324A50 /* DesktopAssistantTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DesktopAssistantTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -55,6 +60,7 @@
 		63AE3F1F2CE1795700324A50 = {
 			isa = PBXGroup;
 			children = (
+				631F95602CF76A0B00AFE273 /* TextToSpeech.swift */,
 				63AE3F2A2CE1795700324A50 /* DesktopAssistant */,
 				63AE3F722CE689E200324A50 /* DesktopAssistantTests */,
 				63AE3F292CE1795700324A50 /* Products */,
@@ -179,6 +185,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				631F95612CF76A0B00AFE273 /* TextToSpeech.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
