@@ -5,5 +5,7 @@
         <string>We need access to your microphone for voice recognition.</string>
         <key>NSSpeechRecognitionUsageDescription</key>
         <string>We need access to speech recognition to transcribe your voice.</string>
+        <key>NSScreenCaptureUsageDescription</key>
+        <string>This app needs screen recording access to capture screenshots.</string>
     </dict>
 </plist>

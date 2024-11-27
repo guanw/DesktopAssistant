@@ -69,6 +69,8 @@ struct ContentView: View {
 
             imageAttachment()
 
+            screenshotButton()
+
             translatedText()
 
             recordingStateIndicator()
@@ -175,6 +177,19 @@ struct ContentView: View {
         .buttonStyle(BorderlessButtonStyle())
     }
 
+    private func screenshotButton() -> some View {
+        return Button(action: {
+            TakeScreensShots(fileNamePrefix: "screenshot")
+        }) {
+            HStack {
+                Text(
+                    "take screenshot"
+                )
+            }
+        }
+        .buttonStyle(BorderlessButtonStyle())
+    }
+
     private func openImagePicker() {
         let openPanel = NSOpenPanel()
         openPanel.allowedContentTypes = [UTType.jpeg] // Allow image file types
@@ -207,6 +222,47 @@ struct ContentView: View {
                     .multilineTextAlignment(.center)
             }
         }
+    }
+
+    private func TakeScreensShots(fileNamePrefix: String){
+       var displayCount: UInt32 = 0;
+       var result = CGGetActiveDisplayList(0, nil, &displayCount)
+       if (result != CGError.success) {
+           Logger.shared.log("error: \(result)")
+           return
+       }
+       let allocated = Int(displayCount)
+       let activeDisplays = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: allocated)
+       result = CGGetActiveDisplayList(displayCount, activeDisplays, &displayCount)
+
+       if (result != CGError.success) {
+           Logger.shared.log("error: \(result)")
+           return
+       }
+
+       guard let desktopDirectory = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first else {
+           Logger.shared.log("Unable to locate Desktop directory.")
+           return
+       }
+
+       for i in 1...displayCount {
+           let unixTimestamp = CreateTimeStamp()
+           let fileUrl = URL(fileURLWithPath: fileNamePrefix + "_" + "\(unixTimestamp)" + "_" + "\(i)" + ".jpg", isDirectory: true)
+           let screenShot:CGImage = CGDisplayCreateImage(activeDisplays[Int(i-1)])!
+           let bitmapRep = NSBitmapImageRep(cgImage: screenShot)
+           let jpegData = bitmapRep.representation(using: NSBitmapImageRep.FileType.jpeg, properties: [:])!
+
+
+           do {
+               try jpegData.write(to: fileUrl, options: .atomic)
+           }
+           catch {Logger.shared.log("error: \(error)")}
+       }
+   }
+
+    private func CreateTimeStamp() -> Int32
+    {
+        return Int32(Date().timeIntervalSince1970)
     }
 
     private func recordingStateIndicator() -> some View {
