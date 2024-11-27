@@ -57,6 +57,7 @@ struct ContentView: View {
     @State private var selectedFileUrl: URL? = nil
     @State private var isAttachPageClickableHovered = false
     @State private var isScreenshotClickableHovered = false
+    @State private var waitingForReply = false
     private let apiClient = GroqAPIClient(apiKey: "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", model: model)
 
     
@@ -111,6 +112,7 @@ struct ContentView: View {
             speechManager.stopRecording()
             if (!transcribedText.isEmpty) {
                 self.createInput(transcribedText: transcribedText)
+                self.waitingForReply = true;
                 apiClient.sendChatCompletionRequest(messages: messages) { result in
                     switch result {
                     case .success(let result):
@@ -118,6 +120,7 @@ struct ContentView: View {
                     case .failure(let error):
                         messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                     }
+                    self.waitingForReply = false;
                 }
 
                 // reset
@@ -136,6 +139,9 @@ struct ContentView: View {
                         ForEach(messages, id: \.id) { chatMessage in
                             messageView(for: chatMessage)
                         }
+
+                        self.waitingForReply ? ThreeDotsLoading()
+                            .frame(width: 100, height: 30) : nil
                     }
                 }
                 .onChange(of: messages.count) { _ in
