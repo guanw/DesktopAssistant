@@ -119,7 +119,10 @@ struct ContentView: View {
                         messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                     }
                 }
+
+                // reset
                 transcribedText = ""
+                self.selectedFileUrl = nil
             }
         }
         isRecording.toggle()
@@ -194,7 +197,7 @@ struct ContentView: View {
                 Image(systemName: "scroll")
                     .resizable()
                     .frame(width: 24, height: 24)
-                    .help("Take screenshot")
+                    .help("Take screenshot and attach")
                     .foregroundColor(isScreenshotClickableHovered ? .blue : .primary) // Change color on hover
                     .onHover { hovering in
                         isScreenshotClickableHovered = hovering
@@ -271,6 +274,8 @@ struct ContentView: View {
                try jpegData.write(to: fileUrl, options: .atomic)
            }
            catch {Logger.shared.log("error: \(error)")}
+
+           self.selectedFileUrl = fileUrl
        }
    }
 
