@@ -55,6 +55,8 @@ struct ContentView: View {
     @State private var messages: [ChatMessage] = []
     @State private var showFloatingWindow = false
     @State private var selectedFileUrl: URL? = nil
+    @State private var isAttachPageClickableHovered = false
+    @State private var isScreenshotClickableHovered = false
     private let apiClient = GroqAPIClient(apiKey: "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", model: model)
 
     
@@ -67,9 +69,12 @@ struct ContentView: View {
             
             chatHistory()
 
-            imageAttachment()
+            HStack () {
+                imageAttachment()
 
-            screenshotButton()
+                screenshotButton()
+            }
+
 
             translatedText()
 
@@ -173,6 +178,10 @@ struct ContentView: View {
                     content
                 )
             }
+            .foregroundColor(isAttachPageClickableHovered ? .blue : .primary) // Change color on hover
+            .onHover { hovering in
+                isAttachPageClickableHovered = hovering
+            }
         }
         .buttonStyle(BorderlessButtonStyle())
     }
@@ -182,9 +191,14 @@ struct ContentView: View {
             TakeScreensShots(fileNamePrefix: "screenshot")
         }) {
             HStack {
-                Text(
-                    "take screenshot"
-                )
+                Image(systemName: "scroll")
+                    .resizable()
+                    .frame(width: 24, height: 24)
+                    .help("Take screenshot")
+                    .foregroundColor(isScreenshotClickableHovered ? .blue : .primary) // Change color on hover
+                    .onHover { hovering in
+                        isScreenshotClickableHovered = hovering
+                    }
             }
         }
         .buttonStyle(BorderlessButtonStyle())
