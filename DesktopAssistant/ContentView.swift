@@ -120,8 +120,7 @@ struct ContentView: View {
                 apiClient.sendChatCompletionRequest(messages: messages) { result in
                     switch result {
                     case .success(let result):
-                        messages.append(.message(Message(text: result, role: .System)))
-                        TextToSpeech.shared.speak(result)
+                        self.parseSuccessReply(messages: messages, result: result)
                     case .failure(let error):
                         messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                     }
@@ -134,6 +133,17 @@ struct ContentView: View {
             }
         }
         isRecording.toggle()
+    }
+
+    private func parseSuccessReply(messages: [ChatMessage], result: String) {
+        if (CommandParser.isReminderCommand) {
+
+            // TODO schedule cron job
+            self.messages.append(.message(Message(text: "reminder scheduled", role: .System)))
+            return
+        }
+        self.messages.append(.message(Message(text: result, role: .System)))
+        TextToSpeech.shared.speak(result)
     }
 
     private func chatHistory() -> some View {

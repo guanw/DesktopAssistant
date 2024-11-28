@@ -4,12 +4,12 @@ class GroqAPIClient {
     private let apiKey: String
     private let model: String
     private let baseURL = "https://api.groq.com/openai/v1/chat/completions"
-    
+
     init(apiKey: String, model: String) {
         self.apiKey = apiKey
         self.model = model
     }
-    
+
     func sendChatCompletionRequest(messages: [ChatMessage], completion: @escaping (Result<String, Error>) -> Void) {
         // Set up the URL
         guard let url = URL(string: baseURL) else {
@@ -22,9 +22,9 @@ class GroqAPIClient {
         request.httpMethod = "POST"
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let body = self.formatBody(messages: messages)
-        
+
         // Convert the JSON body to data
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
@@ -32,21 +32,21 @@ class GroqAPIClient {
             completion(.failure(error))
             return
         }
-        
+
         // Create the URLSession data task
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
-            
+
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 let error = NSError(domain: "", code: (response as? HTTPURLResponse)?.statusCode ?? -1, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
                 completion(.failure(error))
                 return
             }
-            
+
             // Check and parse the response data
             if let data = data {
                 do {
@@ -57,11 +57,11 @@ class GroqAPIClient {
                 }
             }
         }
-        
+
         // Start the task
         task.resume()
     }
-    
+
     func formatBody(messages: [ChatMessage]) -> [String: Any] {
         var formattedMessages = self.formatMessages(messages: messages)
         formattedMessages = self.appendAssistantMessage(body: formattedMessages, latestMessage: messages.last)
@@ -111,6 +111,22 @@ class GroqAPIClient {
         }
         if (lastMessageUnzipped.lowercased().contains("code")) {
             messages.append(["role": "assistant", "content": "make sure if the user is asking you to generate some code, just output the code itself, don't add any non-code context. But please only do this if you see keyword code from message"])
+        } else if (lastMessageUnzipped.lowercased().contains("remind me")) {
+            CommandParser.isReminderCommand = true;
+            let prunedLastMessage = lastMessageUnzipped.lowercased().replacingOccurrences(of: "remind me", with: "");
+            let notificationCommand = "osascript -e 'display notification \"\(prunedLastMessage)\" with title \"DesktopAssistant Reminder\"'"
+            messages.append(["role": "assistant", "content": """
+                The user wants to schedule a task. Generate a valid cron job command
+                based on the user's request. The response must include only the cron job syntax
+                (no explanation) and an example command.
+
+                Example:
+                Input: "Remind me to drink water every hour."
+                Output: "0 * * * *", "Drink water"
+
+                Input: "\(lastMessageUnzipped)"
+                Output:
+            """])
         }
 
         return messages;
