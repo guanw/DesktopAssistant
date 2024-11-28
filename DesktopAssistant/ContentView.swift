@@ -63,7 +63,15 @@ struct ContentView: View {
     @State private var isAttachPageClickableHovered = false
     @State private var isScreenshotClickableHovered = false
     @State private var waitingForReply = false
-    private let apiClient = GroqAPIClient(apiKey: "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", model: model)
+    @State private var apiClient: GroqAPIClient = {
+        guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
+              let xml = FileManager.default.contents(atPath: path),
+              let config = try? PropertyListSerialization.propertyList(from: xml, options: [], format: nil) as? [String: Any],
+              let apiKey = config["GroqAPIKey"] as? String else {
+            fatalError("Failed to load API key from Config.plist")
+        }
+        return GroqAPIClient(apiKey: apiKey, model: model)
+    }()
 
     var body: some View {
         VStack() {
@@ -100,6 +108,17 @@ struct ContentView: View {
         }
     }
 
+    private func loadAPIKey() -> String? {
+        guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
+              let xml = FileManager.default.contents(atPath: path),
+              let config = try? PropertyListSerialization.propertyList(from: xml, options: [], format: nil) as? [String: Any],
+              let apiKey = config["GroqAPIKey"] as? String else {
+            print("Failed to load API key from Config.plist")
+            return nil
+        }
+        return apiKey
+    }
+
     private func handleKeyPress() {
         // Start/Stop speech recording on Command+L press
         if !isRecording {
@@ -126,7 +145,6 @@ struct ContentView: View {
                     }
                     self.waitingForReply = false;
                 }
-
                 // reset
                 transcribedText = ""
                 self.selectedFileUrl = nil
