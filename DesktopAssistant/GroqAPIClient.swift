@@ -4,6 +4,7 @@ class GroqAPIClient {
     private let apiKey: String
     private let model: String
     private let baseURL = "https://api.groq.com/openai/v1/chat/completions"
+    private let REMIND_ME_KEY = "remind me"
 
     init(apiKey: String, model: String) {
         self.apiKey = apiKey
@@ -111,18 +112,19 @@ class GroqAPIClient {
         }
         if (lastMessageUnzipped.lowercased().contains("code")) {
             messages.append(["role": "assistant", "content": "make sure if the user is asking you to generate some code, just output the code itself, don't add any non-code context. But please only do this if you see keyword code from message"])
-        } else if (lastMessageUnzipped.lowercased().contains("remind me")) {
+        } else if (lastMessageUnzipped.lowercased().contains(REMIND_ME_KEY)) {
             CommandParser.isReminderCommand = true;
-            let prunedLastMessage = lastMessageUnzipped.lowercased().replacingOccurrences(of: "remind me", with: "");
+            let prunedLastMessage = lastMessageUnzipped.lowercased().replacingOccurrences(of: REMIND_ME_KEY, with: "");
             let notificationCommand = "osascript -e 'display notification \"\(prunedLastMessage)\" with title \"DesktopAssistant Reminder\"'"
             messages.append(["role": "system", "content": """
-                The user wants to schedule a task. Generate a valid cron job command
-                based on the user's request. The response must include only the cron job syntax
-                (no explanation) and an example command.
+                The user wants to schedule a task. extract the action user would like to be reminded of
+                as response
+
+                please only output the two mentioned above in response and no reasoning logic included
 
                 Example:
-                Request: "Remind me to drink water every hour."
-                Response: "0 * * * *", "Drink water"
+                Request: "Remind me to drink water in 3 hours."
+                Response: "Drink water"
 
                 Request: "\(lastMessageUnzipped)"
                 Response:
