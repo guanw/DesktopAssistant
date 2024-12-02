@@ -161,7 +161,7 @@ struct ContentView: View {
 
     private func parseSuccessReply(messages: [ChatMessage], result: String) {
         if (CommandParser.isReminderCommand) {
-
+            Logger.shared.log("reminder scheduled result: \(result)")
             // TODO schedule cron job
             self.messages.append(.message(Message(text: "reminder scheduled", role: .System)))
             return

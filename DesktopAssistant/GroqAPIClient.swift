@@ -115,17 +115,17 @@ class GroqAPIClient {
             CommandParser.isReminderCommand = true;
             let prunedLastMessage = lastMessageUnzipped.lowercased().replacingOccurrences(of: "remind me", with: "");
             let notificationCommand = "osascript -e 'display notification \"\(prunedLastMessage)\" with title \"DesktopAssistant Reminder\"'"
-            messages.append(["role": "assistant", "content": """
+            messages.append(["role": "system", "content": """
                 The user wants to schedule a task. Generate a valid cron job command
                 based on the user's request. The response must include only the cron job syntax
                 (no explanation) and an example command.
 
                 Example:
-                Input: "Remind me to drink water every hour."
-                Output: "0 * * * *", "Drink water"
+                Request: "Remind me to drink water every hour."
+                Response: "0 * * * *", "Drink water"
 
-                Input: "\(lastMessageUnzipped)"
-                Output:
+                Request: "\(lastMessageUnzipped)"
+                Response:
             """])
         }
 
