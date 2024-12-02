@@ -97,6 +97,8 @@ struct ContentView: View {
                 Text("Please enable speech recognition permission in System Settings")
                     .foregroundColor(.red)
             }
+
+            InputBox()
         }
         .frame(width: 500, height: 600)
         .background(Color.gray.opacity(0.2))
@@ -133,24 +135,28 @@ struct ContentView: View {
             }
         } else {
             speechManager.stopRecording()
-            if (!transcribedText.isEmpty) {
-                self.createInput(transcribedText: transcribedText)
-                self.waitingForReply = true;
-                apiClient.sendChatCompletionRequest(messages: messages) { result in
-                    switch result {
-                    case .success(let result):
-                        self.parseSuccessReply(messages: messages, result: result)
-                    case .failure(let error):
-                        messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
-                    }
-                    self.waitingForReply = false;
-                }
-                // reset
-                transcribedText = ""
-                self.selectedFileUrl = nil
-            }
+            self.sendRequestToLargeLanguageModel(transcribedText: transcribedText)
         }
         isRecording.toggle()
+    }
+
+    private func sendRequestToLargeLanguageModel(transcribedText: String) {
+        if (!transcribedText.isEmpty) {
+            self.createInput(transcribedText: transcribedText)
+            self.waitingForReply = true;
+            apiClient.sendChatCompletionRequest(messages: messages) { result in
+                switch result {
+                case .success(let result):
+                    self.parseSuccessReply(messages: messages, result: result)
+                case .failure(let error):
+                    messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
+                }
+                self.waitingForReply = false;
+            }
+            // reset
+            self.transcribedText = ""
+            self.selectedFileUrl = nil
+        }
     }
 
     private func parseSuccessReply(messages: [ChatMessage], result: String) {
@@ -358,6 +364,17 @@ struct ContentView: View {
                 )
             )
 
+        }
+    }
+
+    @ViewBuilder
+    private func InputBox() -> some View {
+        // can be enabled by setting Knobs.isTextInputEnabled to true, use for debugging only
+        if Knobs.isTextInputEnabled {
+            ChatInputView { newMessage in
+                // Append new message to the array
+                self.sendRequestToLargeLanguageModel(transcribedText: newMessage)
+            }
         }
     }
 }
