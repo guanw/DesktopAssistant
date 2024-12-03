@@ -1,4 +1,4 @@
 struct Knobs {
-    static var isTextInputEnabled: Bool = true;
+    static var isTextInputEnabled: Bool = false;
 }
 
