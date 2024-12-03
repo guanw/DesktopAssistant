@@ -1,6 +1,7 @@
 import SwiftUI
 import Speech
 
+
 struct KeyPressResponder: NSViewRepresentable {
     var onKeyPress: (() -> Void)?
 
@@ -79,7 +80,7 @@ struct ContentView: View {
                 handleKeyPress()
             }
             .frame(width: 0, height: 0)
-            
+
             chatHistory()
 
             HStack () {
@@ -147,22 +148,28 @@ struct ContentView: View {
             apiClient.sendChatCompletionRequest(messages: messages) { result in
                 switch result {
                 case .success(let result):
-                    self.parseSuccessReply(messages: messages, result: result)
+                    self.parseSuccessReply(messages: messages, result: result, transcribedText: transcribedText)
                 case .failure(let error):
                     messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                 }
+
+                // reset
                 self.waitingForReply = false;
+                self.transcribedText = ""
+                self.selectedFileUrl = nil
             }
-            // reset
-            self.transcribedText = ""
-            self.selectedFileUrl = nil
+
         }
     }
 
-    private func parseSuccessReply(messages: [ChatMessage], result: String) {
+    private func parseSuccessReply(messages: [ChatMessage], result: String, transcribedText: String) {
         if (CommandParser.isReminderCommand) {
             Logger.shared.log("reminder scheduled result: \(result)")
-            // TODO parse the time using some library and schedule launchd task
+            let timeTuple = RemindMeUtils.parseTimeFromText(text: transcribedText)
+            if (timeTuple == nil) {
+                self.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
+            }
+            // schedule launchd task
             self.messages.append(.message(Message(text: "reminder scheduled", role: .System)))
             return
         }
