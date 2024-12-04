@@ -115,7 +115,6 @@ class GroqAPIClient {
         } else if (lastMessageUnzipped.lowercased().contains(REMIND_ME_KEY)) {
             CommandParser.isReminderCommand = true;
             let prunedLastMessage = lastMessageUnzipped.lowercased().replacingOccurrences(of: REMIND_ME_KEY, with: "");
-            let notificationCommand = "osascript -e 'display notification \"\(prunedLastMessage)\" with title \"DesktopAssistant Reminder\"'"
             messages.append(["role": "system", "content": """
                 The user wants to schedule a task. extract the action user would like to be reminded of
                 as response
