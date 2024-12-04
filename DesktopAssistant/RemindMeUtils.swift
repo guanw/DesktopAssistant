@@ -1,5 +1,4 @@
 import Foundation
-import SwiftDate
 import Cocoa
 import UserNotifications
 
