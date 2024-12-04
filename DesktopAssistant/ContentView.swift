@@ -93,7 +93,7 @@ struct ContentView: View {
             translatedText()
 
             recordingStateIndicator()
-            
+
             if !isAuthorized {
                 Text("Please enable speech recognition permission in System Settings")
                     .foregroundColor(.red)
@@ -116,7 +116,7 @@ struct ContentView: View {
               let xml = FileManager.default.contents(atPath: path),
               let config = try? PropertyListSerialization.propertyList(from: xml, options: [], format: nil) as? [String: Any],
               let apiKey = config["GroqAPIKey"] as? String else {
-            print("Failed to load API key from Config.plist")
+            Logger.shared.log("Failed to load API key from Config.plist")
             return nil
         }
         return apiKey
@@ -168,7 +168,10 @@ struct ContentView: View {
             let timeTuple = RemindMeUtils.parseTimeFromText(text: transcribedText)
             if (timeTuple == nil) {
                 self.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
+                Logger.shared.log("failed to extract hour and minute for reminder")
+                return
             }
+            RemindMeUtils.scheduleNotif(text: result, timeTuple: timeTuple!)
             // schedule launchd task
             self.messages.append(.message(Message(text: "reminder scheduled", role: .System)))
             return
@@ -202,7 +205,7 @@ struct ContentView: View {
         .cornerRadius(12)
         .shadow(radius: 5)
     }
-    
+
     private func messageView(for chatMessage: ChatMessage) -> AnyView {
         switch chatMessage {
         case .message(let message):
@@ -347,7 +350,7 @@ struct ContentView: View {
             }
         }.padding()
     }
-    
+
     func createInput(transcribedText: String) {
         if model == STABLE_MODEL {
             messages.append(.message(Message(text: transcribedText, role: .User)))
