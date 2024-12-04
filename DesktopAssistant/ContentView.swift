@@ -156,10 +156,32 @@ struct ContentView: View {
                 // reset
                 self.waitingForReply = false;
                 self.transcribedText = ""
-                self.selectedFileUrl = nil
+                self.cleanupTempScreenshotFile()
+
             }
 
         }
+    }
+
+    private func cleanupTempScreenshotFile() {
+        let fileManager = FileManager.default
+        if (self.selectedFileUrl == nil) {
+            return
+        }
+        do {
+            defer {
+                self.selectedFileUrl = nil
+            }
+            if fileManager.fileExists(atPath: self.selectedFileUrl!.path) {
+                try fileManager.removeItem(at: self.selectedFileUrl!)
+                Logger.shared.log("File deleted successfully.")
+            } else {
+                Logger.shared.log("File does not exist at \(self.selectedFileUrl!.path).")
+            }
+        } catch {
+            Logger.shared.log("Failed to delete file: \(error.localizedDescription)")
+        }
+
     }
 
     private func parseSuccessReply(messages: [ChatMessage], result: String, transcribedText: String) {
