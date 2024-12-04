@@ -172,8 +172,11 @@ struct ContentView: View {
                 return
             }
             RemindMeUtils.scheduleNotif(text: result, timeTuple: timeTuple!)
-            // schedule launchd task
-            self.messages.append(.message(Message(text: "reminder scheduled", role: .System)))
+            self.messages.append(.message(Message(text: String(
+                format: "reminder scheduled in %d hour(s) and %d minute(s)",
+                timeTuple!.hours,
+                timeTuple!.minutes
+            ), role: .System)))
             return
         }
         self.messages.append(.message(Message(text: result, role: .System)))
