@@ -55,7 +55,6 @@ let model = MULTI_MODAL_MODEL
 
 struct ContentView: View {
     @StateObject private var speechManager = SpeechToTextManager()
-    @State private var transcribedText = ""
     @StateObject private var recordingState = RecordingState()
     @StateObject private var chatState = ChatState()
     @StateObject private var imageState = ImageState()
@@ -89,7 +88,10 @@ struct ContentView: View {
             }
 
 
-            translatedText()
+            TranscribedText(
+                recordingState: recordingState,
+                chatState: chatState
+            )
 
             RecordingStateIndicator(recordingState: self.recordingState)
 
@@ -126,10 +128,10 @@ struct ContentView: View {
     private func handleKeyPress() {
         // Start/Stop speech recording on Command+L press
         if !recordingState.isRecording {
-            transcribedText = ""
+            chatState.transcribedText = ""
             do {
                 speechManager.onTranscription = { text in
-                    transcribedText = text
+                    chatState.transcribedText = text
                 }
                 try speechManager.startRecording()
             } catch {
@@ -137,7 +139,7 @@ struct ContentView: View {
             }
         } else {
             speechManager.stopRecording()
-            self.sendRequestToLargeLanguageModel(transcribedText: transcribedText)
+            self.sendRequestToLargeLanguageModel(transcribedText: chatState.transcribedText)
         }
         recordingState.isRecording.toggle()
     }
@@ -158,7 +160,7 @@ struct ContentView: View {
                 DispatchQueue.main.async {
                     chatState.waitingForReply = false;
                 }
-                self.transcribedText = ""
+                chatState.transcribedText = ""
                 self.cleanupTempScreenshotFile()
 
             }
@@ -223,23 +225,6 @@ struct ContentView: View {
                 imageState.selectedFileUrl = selectedFileURL
             } else {
                 Logger.shared.log("Failed to load image")
-            }
-        }
-    }
-
-    private func translatedText() -> some View {
-        return ZStack {
-            if recordingState.isRecording && transcribedText.isEmpty {
-                ThreeDotsLoading() // Show loading animation
-                    .frame(width: 100, height: 30)
-            } else if (recordingState.isRecording) {
-                Text("You said: " + transcribedText)
-                    .font(.body)
-                    .frame(width: 400, height: 50)
-                    .cornerRadius(8)
-                    .padding(8)
-                    .shadow(radius: 3)
-                    .multilineTextAlignment(.center)
             }
         }
     }
