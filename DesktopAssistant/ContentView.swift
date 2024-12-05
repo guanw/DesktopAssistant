@@ -157,7 +157,9 @@ struct ContentView: View {
                 }
 
                 // reset
-                chatState.waitingForReply = false;
+                DispatchQueue.main.async {
+                    chatState.waitingForReply = false;
+                }
                 self.transcribedText = ""
                 self.cleanupTempScreenshotFile()
 
@@ -204,7 +206,9 @@ struct ContentView: View {
             ), role: .System)))
             return
         }
-        chatState.messages.append(.message(Message(text: result, role: .System)))
+        DispatchQueue.main.async {
+            chatState.messages.append(.message(Message(text: result, role: .System)))
+        }
         TextToSpeech.shared.speak(result)
     }
 
