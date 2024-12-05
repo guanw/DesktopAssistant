@@ -56,7 +56,7 @@ let model = MULTI_MODAL_MODEL
 struct ContentView: View {
     @StateObject private var speechManager = SpeechToTextManager()
     @State private var transcribedText = ""
-    @State private var isRecording = false
+    @StateObject private var recordingState = RecordingState()
     @State private var isAuthorized = false
     @State private var messages: [ChatMessage] = []
     @State private var showFloatingWindow = false
@@ -94,7 +94,7 @@ struct ContentView: View {
 
             translatedText()
 
-            recordingStateIndicator()
+            RecordingStateIndicator()
 
             llamaButtonPlayground()
 
@@ -128,7 +128,7 @@ struct ContentView: View {
 
     private func handleKeyPress() {
         // Start/Stop speech recording on Command+L press
-        if !isRecording {
+        if !recordingState.isRecording {
             transcribedText = ""
             do {
                 speechManager.onTranscription = { text in
@@ -142,7 +142,7 @@ struct ContentView: View {
             speechManager.stopRecording()
             self.sendRequestToLargeLanguageModel(transcribedText: transcribedText)
         }
-        isRecording.toggle()
+        recordingState.isRecording.toggle()
     }
 
     private func sendRequestToLargeLanguageModel(transcribedText: String) {
@@ -310,10 +310,10 @@ struct ContentView: View {
 
     private func translatedText() -> some View {
         return ZStack {
-            if isRecording && transcribedText.isEmpty {
+            if recordingState.isRecording && transcribedText.isEmpty {
                 ThreeDotsLoading() // Show loading animation
                     .frame(width: 100, height: 30)
-            } else if (isRecording) {
+            } else if (recordingState.isRecording) {
                 Text("You said: " + transcribedText)
                     .font(.body)
                     .frame(width: 400, height: 50)
@@ -366,18 +366,6 @@ struct ContentView: View {
     private func CreateTimeStamp() -> Int32
     {
         return Int32(Date().timeIntervalSince1970)
-    }
-
-    private func recordingStateIndicator() -> some View {
-        return HStack(spacing: 20) {
-            if isRecording {
-                Text("Recording...")
-                    .foregroundColor(.red)
-            } else {
-                Text("Press CMD+l and start talking, press again to stop")
-                    .foregroundColor(.gray)
-            }
-        }.padding()
     }
 
     func createInput(transcribedText: String) {
