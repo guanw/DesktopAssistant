@@ -61,7 +61,6 @@ struct ContentView: View {
     @StateObject private var imageState = ImageState()
     @State private var isAuthorized = false
     @State private var showFloatingWindow = false
-    @State private var isScreenshotClickableHovered = false
     @State private var apiClient: GroqAPIClient = {
         guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
               let xml = FileManager.default.contents(atPath: path),
@@ -86,7 +85,7 @@ struct ContentView: View {
             HStack () {
                 ImageAttachment(imageState: self.imageState)
 
-                screenshotButton()
+                ScreenshotButton(imageState: self.imageState)
             }
 
 
@@ -211,24 +210,6 @@ struct ContentView: View {
         TextToSpeech.shared.speak(result)
     }
 
-    private func screenshotButton() -> some View {
-        return Button(action: {
-            TakeScreensShots(fileNamePrefix: "screenshot")
-        }) {
-            HStack {
-                Image(systemName: "scroll")
-                    .resizable()
-                    .frame(width: 24, height: 24)
-                    .help("Take screenshot and attach")
-                    .foregroundColor(isScreenshotClickableHovered ? .blue : .primary) // Change color on hover
-                    .onHover { hovering in
-                        isScreenshotClickableHovered = hovering
-                    }
-            }
-        }
-        .buttonStyle(BorderlessButtonStyle())
-    }
-
     private func openImagePicker() {
         let openPanel = NSOpenPanel()
         openPanel.allowedContentTypes = [UTType.jpeg] // Allow image file types
@@ -261,49 +242,6 @@ struct ContentView: View {
                     .multilineTextAlignment(.center)
             }
         }
-    }
-
-    private func TakeScreensShots(fileNamePrefix: String){
-       var displayCount: UInt32 = 0;
-       var result = CGGetActiveDisplayList(0, nil, &displayCount)
-       if (result != CGError.success) {
-           Logger.shared.log("error: \(result)")
-           return
-       }
-       let allocated = Int(displayCount)
-       let activeDisplays = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: allocated)
-       result = CGGetActiveDisplayList(displayCount, activeDisplays, &displayCount)
-
-       if (result != CGError.success) {
-           Logger.shared.log("error: \(result)")
-           return
-       }
-
-       guard let desktopDirectory = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first else {
-           Logger.shared.log("Unable to locate Desktop directory.")
-           return
-       }
-
-       for i in 1...displayCount {
-           let unixTimestamp = CreateTimeStamp()
-           let fileUrl = URL(fileURLWithPath: fileNamePrefix + "_" + "\(unixTimestamp)" + "_" + "\(i)" + ".jpg", isDirectory: true)
-           let screenShot:CGImage = CGDisplayCreateImage(activeDisplays[Int(i-1)])!
-           let bitmapRep = NSBitmapImageRep(cgImage: screenShot)
-           let jpegData = bitmapRep.representation(using: NSBitmapImageRep.FileType.jpeg, properties: [:])!
-
-
-           do {
-               try jpegData.write(to: fileUrl, options: .atomic)
-           }
-           catch {Logger.shared.log("error: \(error)")}
-
-           imageState.selectedFileUrl = fileUrl
-       }
-   }
-
-    private func CreateTimeStamp() -> Int32
-    {
-        return Int32(Date().timeIntervalSince1970)
     }
 
     func createInput(transcribedText: String) {

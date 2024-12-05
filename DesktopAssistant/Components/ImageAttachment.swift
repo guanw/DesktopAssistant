@@ -4,6 +4,7 @@ import Foundation
 
 struct ImageAttachment: View {
     @ObservedObject var imageState : ImageState
+    @State var isAttachPageClickableHovered: Bool = false
     var body: some View {
         Button(action: {
             openImagePicker()
@@ -20,9 +21,9 @@ struct ImageAttachment: View {
 
                 )
             }
-            .foregroundColor(imageState.isAttachPageClickableHovered ? .blue : .primary) // Change color on hover
+            .foregroundColor(isAttachPageClickableHovered ? .blue : .primary) // Change color on hover
             .onHover { hovering in
-                imageState.isAttachPageClickableHovered = hovering
+                isAttachPageClickableHovered = hovering
             }
         }
         .buttonStyle(BorderlessButtonStyle())
