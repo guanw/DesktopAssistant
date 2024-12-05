@@ -22,7 +22,7 @@ struct ChatHistory: View {
                 }
             }
         }
-        .frame(width: 400, height: 400)
+        .frame(width: Constants.CHAT_WIDTH, height: 400)
         .background(Color.black)
         .cornerRadius(12)
         .shadow(radius: 5)

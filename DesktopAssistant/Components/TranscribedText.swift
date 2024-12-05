@@ -10,7 +10,7 @@ struct TranscribedText: View {
             } else if (recordingState.isRecording) {
                 Text("You said: " + chatState.transcribedText)
                     .font(.body)
-                    .frame(width: 400, height: 50)
+                    .frame(width: Constants.CHAT_WIDTH, height: 50)
                     .cornerRadius(8)
                     .padding(8)
                     .shadow(radius: 3)

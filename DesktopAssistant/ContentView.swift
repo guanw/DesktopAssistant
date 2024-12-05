@@ -114,6 +114,7 @@ struct ContentView: View {
         }
     }
 
+
     private func loadAPIKey() -> String? {
         guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
               let xml = FileManager.default.contents(atPath: path),
@@ -279,5 +280,4 @@ struct ContentView: View {
     func mainCallback(_ str: String, _ time: Double) -> Bool {
         return false;
     }
-
 }
