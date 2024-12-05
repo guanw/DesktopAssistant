@@ -57,13 +57,12 @@ struct ContentView: View {
     @StateObject private var speechManager = SpeechToTextManager()
     @State private var transcribedText = ""
     @StateObject private var recordingState = RecordingState()
+    @StateObject private var chatState = ChatState()
     @State private var isAuthorized = false
-    @State private var messages: [ChatMessage] = []
     @State private var showFloatingWindow = false
     @State private var selectedFileUrl: URL? = nil
     @State private var isAttachPageClickableHovered = false
     @State private var isScreenshotClickableHovered = false
-    @State private var waitingForReply = false
     @State private var apiClient: GroqAPIClient = {
         guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
               let xml = FileManager.default.contents(atPath: path),
@@ -83,7 +82,7 @@ struct ContentView: View {
             }
             .frame(width: 0, height: 0)
 
-            chatHistory()
+            ChatHistory(chatState: self.chatState)
 
             HStack () {
                 imageAttachment()
@@ -94,7 +93,7 @@ struct ContentView: View {
 
             translatedText()
 
-            RecordingStateIndicator()
+            RecordingStateIndicator(recordingState: self.recordingState)
 
             llamaButtonPlayground()
 
@@ -148,17 +147,17 @@ struct ContentView: View {
     private func sendRequestToLargeLanguageModel(transcribedText: String) {
         if (!transcribedText.isEmpty) {
             self.createInput(transcribedText: transcribedText)
-            self.waitingForReply = true;
-            apiClient.sendChatCompletionRequest(messages: messages) { result in
+            chatState.waitingForReply = true;
+            apiClient.sendChatCompletionRequest(messages: chatState.messages) { result in
                 switch result {
                 case .success(let result):
-                    self.parseSuccessReply(messages: messages, result: result, transcribedText: transcribedText)
+                    self.parseSuccessReply(messages: chatState.messages, result: result, transcribedText: transcribedText)
                 case .failure(let error):
-                    messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
+                    chatState.messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
                 }
 
                 // reset
-                self.waitingForReply = false;
+                chatState.waitingForReply = false;
                 self.transcribedText = ""
                 self.cleanupTempScreenshotFile()
 
@@ -193,55 +192,20 @@ struct ContentView: View {
             Logger.shared.log("reminder scheduled result: \(result)")
             let timeTuple = RemindMeUtils.parseTimeFromText(text: transcribedText)
             if (timeTuple == nil) {
-                self.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
+                chatState.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
                 Logger.shared.log("failed to extract hour and minute for reminder")
                 return
             }
             RemindMeUtils.scheduleNotif(text: result, timeTuple: timeTuple!)
-            self.messages.append(.message(Message(text: String(
+            chatState.messages.append(.message(Message(text: String(
                 format: "reminder scheduled in %d hour(s) and %d minute(s)",
                 timeTuple!.hours,
                 timeTuple!.minutes
             ), role: .System)))
             return
         }
-        self.messages.append(.message(Message(text: result, role: .System)))
+        chatState.messages.append(.message(Message(text: result, role: .System)))
         TextToSpeech.shared.speak(result)
-    }
-
-    private func chatHistory() -> some View {
-        return VStack {
-            ScrollViewReader { scrollView in
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        ForEach(messages, id: \.id) { chatMessage in
-                            messageView(for: chatMessage)
-                        }
-
-                        self.waitingForReply ? ThreeDotsLoading()
-                            .frame(width: 100, height: 30) : nil
-                    }
-                }
-                .onChange(of: messages.count) { _ in
-                    if let lastMessageId = messages.last?.id {
-                        scrollView.scrollTo(lastMessageId)
-                    }
-                }
-            }
-        }
-        .frame(width: 400, height: 400)
-        .background(Color.black)
-        .cornerRadius(12)
-        .shadow(radius: 5)
-    }
-
-    private func messageView(for chatMessage: ChatMessage) -> AnyView {
-        switch chatMessage {
-        case .message(let message):
-            return AnyView(ChatBubble(message: message).padding(5))
-        case .multiModalMessage(let multiModalMessage):
-            return AnyView(ChatBubble(message: Message(text: multiModalMessage.content.first?.text ?? "", role: .User)).padding(5))
-        }
     }
 
     private func imageAttachment() -> some View {
@@ -370,7 +334,7 @@ struct ContentView: View {
 
     func createInput(transcribedText: String) {
         if model == STABLE_MODEL {
-            messages.append(.message(Message(text: transcribedText, role: .User)))
+            chatState.messages.append(.message(Message(text: transcribedText, role: .User)))
         } else if model == MULTI_MODAL_MODEL {
             var content = [MultiModalMessageContent(text: transcribedText)]
             if let selectedFileUrl = self.selectedFileUrl {
@@ -385,7 +349,7 @@ struct ContentView: View {
                     )
                 }
             }
-            messages.append(
+            chatState.messages.append(
                 .multiModalMessage(
                     MultiModalMessage(role: .User, content: content)
                 )

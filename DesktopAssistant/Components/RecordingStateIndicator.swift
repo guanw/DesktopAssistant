@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RecordingStateIndicator: View {
-    @StateObject private var recordingState = RecordingState()
+    @ObservedObject var recordingState : RecordingState
     var body: some View {
         HStack(spacing: 20) {
             if recordingState.isRecording {
