@@ -58,10 +58,9 @@ struct ContentView: View {
     @State private var transcribedText = ""
     @StateObject private var recordingState = RecordingState()
     @StateObject private var chatState = ChatState()
+    @StateObject private var imageState = ImageState()
     @State private var isAuthorized = false
     @State private var showFloatingWindow = false
-    @State private var selectedFileUrl: URL? = nil
-    @State private var isAttachPageClickableHovered = false
     @State private var isScreenshotClickableHovered = false
     @State private var apiClient: GroqAPIClient = {
         guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
@@ -85,7 +84,7 @@ struct ContentView: View {
             ChatHistory(chatState: self.chatState)
 
             HStack () {
-                imageAttachment()
+                ImageAttachment(imageState: self.imageState)
 
                 screenshotButton()
             }
@@ -170,18 +169,18 @@ struct ContentView: View {
 
     private func cleanupTempScreenshotFile() {
         let fileManager = FileManager.default
-        if (self.selectedFileUrl == nil) {
+        if (imageState.selectedFileUrl == nil) {
             return
         }
         do {
             defer {
-                self.selectedFileUrl = nil
+                imageState.selectedFileUrl = nil
             }
-            if fileManager.fileExists(atPath: self.selectedFileUrl!.path) {
-                try fileManager.removeItem(at: self.selectedFileUrl!)
+            if fileManager.fileExists(atPath: imageState.selectedFileUrl!.path) {
+                try fileManager.removeItem(at: imageState.selectedFileUrl!)
                 Logger.shared.log("File deleted successfully.")
             } else {
-                Logger.shared.log("File does not exist at \(self.selectedFileUrl!.path).")
+                Logger.shared.log("File does not exist at \(imageState.selectedFileUrl!.path).")
             }
         } catch {
             Logger.shared.log("Failed to delete file: \(error.localizedDescription)")
@@ -212,35 +211,6 @@ struct ContentView: View {
         TextToSpeech.shared.speak(result)
     }
 
-    private func imageAttachment() -> some View {
-        let content =
-        {
-            if let text = self.selectedFileUrl?.lastPathComponent {
-                return "Attach Image: " + text
-            } else {
-                return "Attach Image"
-            }
-        }()
-        return Button(action: {
-            openImagePicker()
-        }) {
-            HStack {
-                Image(systemName: "paperclip.circle")
-                    .resizable()
-                    .frame(width: 24, height: 24)
-
-                Text(
-                    content
-                )
-            }
-            .foregroundColor(isAttachPageClickableHovered ? .blue : .primary) // Change color on hover
-            .onHover { hovering in
-                isAttachPageClickableHovered = hovering
-            }
-        }
-        .buttonStyle(BorderlessButtonStyle())
-    }
-
     private func screenshotButton() -> some View {
         return Button(action: {
             TakeScreensShots(fileNamePrefix: "screenshot")
@@ -269,7 +239,7 @@ struct ContentView: View {
 
         if openPanel.runModal() == .OK, let selectedFileURL = openPanel.url {
             if let _ = NSImage(contentsOf: selectedFileURL) {
-                self.selectedFileUrl = selectedFileURL
+                imageState.selectedFileUrl = selectedFileURL
             } else {
                 Logger.shared.log("Failed to load image")
             }
@@ -327,7 +297,7 @@ struct ContentView: View {
            }
            catch {Logger.shared.log("error: \(error)")}
 
-           self.selectedFileUrl = fileUrl
+           imageState.selectedFileUrl = fileUrl
        }
    }
 
@@ -341,7 +311,7 @@ struct ContentView: View {
             chatState.messages.append(.message(Message(text: transcribedText, role: .User)))
         } else if model == MULTI_MODAL_MODEL {
             var content = [MultiModalMessageContent(text: transcribedText)]
-            if let selectedFileUrl = self.selectedFileUrl {
+            if let selectedFileUrl = imageState.selectedFileUrl {
                 let imageUrl = ImageUtil.encodeImageToBase64(
                     imagePath: selectedFileUrl.path()
                 )
