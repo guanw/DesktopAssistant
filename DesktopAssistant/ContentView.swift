@@ -102,7 +102,7 @@ struct ContentView: View {
                     .foregroundColor(.red)
             }
 
-            InputBox()
+            InputBox(sendRequest: self.sendRequestToLargeLanguageModel)
         }
         .frame(width: 500, height: 600)
         .background(Color.gray.opacity(0.2))
@@ -212,23 +212,6 @@ struct ContentView: View {
         TextToSpeech.shared.speak(result)
     }
 
-    private func openImagePicker() {
-        let openPanel = NSOpenPanel()
-        openPanel.allowedContentTypes = [UTType.jpeg] // Allow image file types
-        openPanel.allowsMultipleSelection = false // Single file selection
-        openPanel.canChooseDirectories = false
-        openPanel.canCreateDirectories = false
-        openPanel.title = "Select an Image (jpeg)"
-
-        if openPanel.runModal() == .OK, let selectedFileURL = openPanel.url {
-            if let _ = NSImage(contentsOf: selectedFileURL) {
-                imageState.selectedFileUrl = selectedFileURL
-            } else {
-                Logger.shared.log("Failed to load image")
-            }
-        }
-    }
-
     func createInput(transcribedText: String) {
         if model == STABLE_MODEL {
             chatState.messages.append(.message(Message(text: transcribedText, role: .User)))
@@ -252,17 +235,6 @@ struct ContentView: View {
                 )
             )
 
-        }
-    }
-
-    @ViewBuilder
-    private func InputBox() -> some View {
-        // can be enabled by setting Knobs.isTextInputEnabled to true, use for debugging only
-        if Knobs.isTextInputEnabled {
-            ChatInputView { newMessage in
-                // Append new message to the array
-                self.sendRequestToLargeLanguageModel(transcribedText: newMessage)
-            }
         }
     }
 
