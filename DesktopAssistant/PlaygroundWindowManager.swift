@@ -1,6 +1,7 @@
 import SwiftUI
 
 class PlaygroundWindowManager {
+    @StateObject private var playgroundState = PlaygroundState()
     static let shared = PlaygroundWindowManager()
 
     private var playgroundWindow: NSWindow?
@@ -17,7 +18,9 @@ class PlaygroundWindowManager {
             window.title = "Playground"
             window.isReleasedWhenClosed = false
             window.center()
-            window.contentView = NSHostingView(rootView: PlaygroundView())
+            window.contentView = NSHostingView(
+                rootView: PlaygroundView(playgroundState: playgroundState)
+            )
 
             playgroundWindow = window
 

@@ -40,7 +40,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openPlaygroundWindow() {
-        PlaygroundWindowManager.shared.openPlaygroundWindow()
+        PlaygroundWindowManager.shared
+            .openPlaygroundWindow()
     }
 
     @objc func toggleTextInput() {

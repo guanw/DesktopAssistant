@@ -69,8 +69,7 @@ struct ContentView: View {
         }
         return GroqAPIClient(apiKey: apiKey, model: model)
     }()
-//    @State private var llamaClient: LlamaClient;
-    @State private var llamaResponse = ""
+    
 
     var body: some View {
         VStack() {
@@ -94,8 +93,6 @@ struct ContentView: View {
             )
 
             RecordingStateIndicator(recordingState: self.recordingState)
-
-            llamaButtonPlayground()
 
             if !isAuthorized {
                 Text("Please enable speech recognition permission in System Settings")
@@ -237,47 +234,5 @@ struct ContentView: View {
             )
 
         }
-    }
-
-    @ViewBuilder
-    private func llamaButtonPlayground() -> some View {
-        if Knobs.enableLlamaClientPlayground {
-            Button(action: {
-                testLlamaClient()
-            }) {
-                HStack {
-                    Image(systemName: "scroll")
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                        .help("test llama query")
-
-                    Text(
-                        llamaResponse
-                    )
-                }
-            }
-            .buttonStyle(BorderlessButtonStyle())
-        }
-    }
-
-    func testLlamaClient() {
-        do {
-            // Initialize the client with the callback
-            let llamaClient = try LlamaClient(withCallback: mainCallback)
-
-            // Send a query
-            if let response = llamaClient.query(input_text: "State the meaning of life") {
-                llamaResponse = response
-                print("response: \(response)")
-            } else {
-                print("Model failed to return a response.")
-            }
-        } catch {
-            print("Error initializing LlamaClient: \(error)")
-        }
-    }
-
-    func mainCallback(_ str: String, _ time: Double) -> Bool {
-        return false;
     }
 }
