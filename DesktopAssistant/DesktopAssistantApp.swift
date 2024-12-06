@@ -22,18 +22,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let mainMenu = NSMenu()
 
         // Add a custom "Playground" menu
-        let playgroundMenu = NSMenu(title: "Playground")
+        let desktopAssistantMenu = NSMenu(title: "Playground")
         let playgroundMenuItem = NSMenuItem()
-        playgroundMenuItem.submenu = playgroundMenu
+        playgroundMenuItem.submenu = desktopAssistantMenu
         mainMenu.addItem(playgroundMenuItem)
 
         let newPlaygroundItem = NSMenuItem(title: "New playground", action: #selector(openPlaygroundWindow), keyEquivalent: "p")
-        playgroundMenu.addItem(newPlaygroundItem)
+        let toggleTextInputItem = NSMenuItem(
+            title: "Toggle text input",
+            action: #selector(toggleTextInput),
+            keyEquivalent: "t"
+        )
+        desktopAssistantMenu.addItem(newPlaygroundItem)
+        desktopAssistantMenu.addItem(toggleTextInputItem)
 
         NSApp.mainMenu = mainMenu
     }
 
     @objc func openPlaygroundWindow() {
         PlaygroundWindowManager.shared.openPlaygroundWindow()
+    }
+
+    @objc func toggleTextInput() {
+        DispatchQueue.main.async {
+            Knobs.shared.isTextInputEnabled.toggle()
+        }
     }
 }
