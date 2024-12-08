@@ -157,8 +157,9 @@ struct ContentView: View {
                 // reset
                 DispatchQueue.main.async {
                     chatState.waitingForReply = false;
+                    chatState.transcribedText = ""
                 }
-                chatState.transcribedText = ""
+
                 self.cleanupTempScreenshotFile()
 
             }
