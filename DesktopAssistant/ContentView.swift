@@ -138,7 +138,7 @@ struct ContentView: View {
                 case .success(let result):
                     self.parseSuccessReply(messages: chatState.messages, result: result, transcribedText: transcribedText)
                 case .failure(let error):
-                    chatState.messages.append(.message(Message(text: "Error: \(error.localizedDescription)", role: .System)))
+                    chatState.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
                 }
 
                 // reset

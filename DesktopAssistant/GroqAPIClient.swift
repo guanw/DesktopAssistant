@@ -12,6 +12,13 @@ class GroqAPIClient {
     }
 
     func sendChatCompletionRequest(messages: [ChatMessage], completion: @escaping (Result<String, Error>) -> Void) {
+        if (apiKey.isEmpty) {
+            let error = "groq apiKey is empty and not set yet, please type 'Command + g' to set it up"
+            Logger.shared.log(error)
+            completion(.failure(error))
+            return
+        }
+
         // Set up the URL
         guard let url = URL(string: baseURL) else {
             Logger.shared.log("Invalid URL: " + baseURL)
