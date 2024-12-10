@@ -49,10 +49,6 @@ class KeyPressResponderView: NSView {
     }
 }
 
-let MULTI_MODAL_MODEL = "llama-3.2-90b-vision-preview"
-let STABLE_MODEL = "llama3-8b-8192"
-let model = MULTI_MODAL_MODEL
-
 struct ContentView: View {
     @StateObject private var speechManager = SpeechToTextManager()
     @StateObject private var recordingState = RecordingState()
@@ -60,15 +56,6 @@ struct ContentView: View {
     @StateObject private var imageState = ImageState()
     @State private var isAuthorized = false
     @State private var showFloatingWindow = false
-    @State private var apiClient: GroqAPIClient = {
-        guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
-              let xml = FileManager.default.contents(atPath: path),
-              let config = try? PropertyListSerialization.propertyList(from: xml, options: [], format: nil) as? [String: Any],
-              let apiKey = config["GroqAPIKey"] as? String else {
-            fatalError("Failed to load API key from Config.plist")
-        }
-        return GroqAPIClient(apiKey: apiKey, model: model)
-    }()
     
 
     var body: some View {
@@ -146,7 +133,7 @@ struct ContentView: View {
         if (!transcribedText.isEmpty) {
             self.createInput(transcribedText: transcribedText)
             chatState.waitingForReply = true;
-            apiClient.sendChatCompletionRequest(messages: chatState.messages) { result in
+            AppState.shared.apiClient.sendChatCompletionRequest(messages: chatState.messages) { result in
                 switch result {
                 case .success(let result):
                     self.parseSuccessReply(messages: chatState.messages, result: result, transcribedText: transcribedText)

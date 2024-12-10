@@ -13,7 +13,15 @@ struct DesktopAssistantApp: App {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private var groqApiKeyWindow: NSWindow?
+
+    override init() {
+        super.init()
+        print("AppDelegate initialized")
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        print("applicationDidFinishLaunching")
         setupMenuBar()
     }
 
@@ -33,8 +41,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(toggleTextInput),
             keyEquivalent: "t"
         )
+        let setUpGroqApiKey = NSMenuItem(
+            title: "Set up Groq API key",
+            action: #selector(setupGroqApiKey),
+            keyEquivalent: "g"
+        )
         desktopAssistantMenu.addItem(newPlaygroundItem)
         desktopAssistantMenu.addItem(toggleTextInputItem)
+        desktopAssistantMenu.addItem(setUpGroqApiKey)
 
         NSApp.mainMenu = mainMenu
     }
@@ -48,5 +62,63 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.async {
             Knobs.shared.isTextInputEnabled.toggle()
         }
+    }
+
+    @objc func setupGroqApiKey() {
+        // Check if the window exists
+        if let window = groqApiKeyWindow {
+            // If the window already exists, bring it to the front
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        // Create a new window
+        let newWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 200),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+
+        // Set up the content view
+        let groqApiKeyView = GroqApiKeyView { [weak self] apiKey in
+            guard let self = self else { return }
+
+            // Store the API key and close the window
+            DispatchQueue.main.async {
+                AppState.shared.apiClient = GroqAPIClient(apiKey: apiKey, model: model)
+            }
+            self.groqApiKeyWindow?.close()
+            self.groqApiKeyWindow = nil // Reset the reference
+        }
+        newWindow.contentView = NSHostingView(rootView: groqApiKeyView)
+        newWindow.isReleasedWhenClosed = false // Prevent deallocation
+
+        // Assign and display the window
+        groqApiKeyWindow = newWindow
+        groqApiKeyWindow?.makeKeyAndOrderFront(nil)
+    }
+
+}
+
+struct GroqApiKeyView: View {
+    @State private var apiKey: String = ""
+    var onSubmit: (String) -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Enter Groq API Key")
+                .font(.headline)
+
+            TextField("API Key", text: $apiKey)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            Button("Save") {
+                onSubmit(apiKey)
+            }
+            .padding()
+        }
+        .padding()
     }
 }
