@@ -14,6 +14,7 @@ struct DesktopAssistantApp: App {
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var groqApiKeyWindow: NSWindow?
+    private var notificationCenterWindow: NSWindow?
 
     override init() {
         super.init()
@@ -46,9 +47,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(setupGroqApiKey),
             keyEquivalent: "g"
         )
+        let notificationCenter = NSMenuItem(
+            title: "Notification center",
+            action: #selector(openNotificationCenter),
+            keyEquivalent: "n"
+        )
         desktopAssistantMenu.addItem(newPlaygroundItem)
         desktopAssistantMenu.addItem(toggleTextInputItem)
         desktopAssistantMenu.addItem(setUpGroqApiKey)
+        desktopAssistantMenu.addItem(notificationCenter)
 
         NSApp.mainMenu = mainMenu
     }
@@ -112,4 +119,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         groqApiKeyWindow?.makeKeyAndOrderFront(nil)
     }
 
+    @objc func openNotificationCenter() {
+        // Check if the window exists
+        if let window = notificationCenterWindow {
+            // If the window already exists, bring it to the front
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        var windowX: CGFloat = 0
+        var windowY: CGFloat = 0
+        if let screenFrame = NSScreen.main?.frame {
+            // Calculate the center point of the screen
+            let centerX = screenFrame.midX
+            let centerY = screenFrame.midY
+
+            // Calculate the position for your window to be centered
+            windowX = centerX - (400 / 2)
+            windowY = centerY - (300 / 2)
+        }
+
+        // Create a new window
+        let newWindow = NSWindow(
+            contentRect: NSRect(x: windowX, y: windowY, width: 400, height: 300),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+
+        // Set up the content view
+        let notificationListView = NotificationListView()
+        newWindow.contentView = NSHostingView(rootView: notificationListView)
+        newWindow.isReleasedWhenClosed = false // Prevent deallocation
+
+        // Assign and display the window
+        notificationCenterWindow = newWindow
+        notificationCenterWindow?.makeKeyAndOrderFront(nil)
+    }
 }

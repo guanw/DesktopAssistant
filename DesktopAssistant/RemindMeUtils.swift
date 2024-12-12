@@ -88,6 +88,8 @@ class RemindMeUtils {
                 Logger.shared.log("Error scheduling notification: \(error.localizedDescription)")
             } else {
                 Logger.shared.log("Notification scheduled successfully.")
+                let record = NotificationRecord(id: uuidString, title: content.title, body: content.body, scheduledTime: targetDateWithHours)
+                NotificationStore.save(record)
             }
         }
     }
