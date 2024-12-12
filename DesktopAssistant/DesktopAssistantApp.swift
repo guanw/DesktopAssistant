@@ -72,9 +72,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        var windowX: CGFloat = 0
+        var windowY: CGFloat = 0
+        if let screenFrame = NSScreen.main?.frame {
+            // Calculate the center point of the screen
+            let centerX = screenFrame.midX
+            let centerY = screenFrame.midY
+
+            // Calculate the position for your window to be centered
+            windowX = centerX - (400 / 2)
+            windowY = centerY - (200 / 2)
+        }
+
+
         // Create a new window
         let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 200),
+            contentRect: NSRect(x: windowX, y: windowY, width: 400, height: 200),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -99,26 +112,4 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         groqApiKeyWindow?.makeKeyAndOrderFront(nil)
     }
 
-}
-
-struct GroqApiKeyView: View {
-    @State private var apiKey: String = ""
-    var onSubmit: (String) -> Void
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Enter Groq API Key")
-                .font(.headline)
-
-            TextField("API Key", text: $apiKey)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            Button("Save") {
-                onSubmit(apiKey)
-            }
-            .padding()
-        }
-        .padding()
-    }
 }
