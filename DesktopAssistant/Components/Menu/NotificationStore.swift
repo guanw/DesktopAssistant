@@ -24,7 +24,8 @@ class NotificationStore {
               let records = try? JSONDecoder().decode([NotificationRecord].self, from: data) else {
             return []
         }
-        return records
+        let currentTime = Date()
+        return records.filter { $0.scheduledTime > currentTime }
     }
 
     static func remove(by id: String) {

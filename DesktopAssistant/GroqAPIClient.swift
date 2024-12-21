@@ -126,7 +126,7 @@ class GroqAPIClient {
                 The user wants to schedule a task. extract the action user would like to be reminded of
                 as response
 
-                please only output the two mentioned above in response and no reasoning logic included
+                please only output the exact words nothing more nothing less
 
                 Example:
                 Request: "Remind me to drink water in 3 hours."
