@@ -120,13 +120,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openNotificationCenter() {
-        // Check if the window exists
-        if let window = notificationCenterWindow {
-            // If the window already exists, bring it to the front
-            window.makeKeyAndOrderFront(nil)
-            return
-        }
-
         var windowX: CGFloat = 0
         var windowY: CGFloat = 0
         if let screenFrame = NSScreen.main?.frame {
@@ -149,6 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Set up the content view
         let notificationListView = NotificationListView()
+
         newWindow.contentView = NSHostingView(rootView: notificationListView)
         newWindow.isReleasedWhenClosed = false // Prevent deallocation
 
@@ -156,4 +150,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         notificationCenterWindow = newWindow
         notificationCenterWindow?.makeKeyAndOrderFront(nil)
     }
+
 }

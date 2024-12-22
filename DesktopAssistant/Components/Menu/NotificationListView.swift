@@ -15,15 +15,6 @@ struct NotificationListView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                    Spacer()
-                    Button(action: {
-                        deleteNotification(notifications[index].id)
-                    }) {
-                        Image(systemName: "trash")
-                            .font(.title3)
-                            .foregroundColor(.red)
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
                 }
                 .padding(.vertical, 8)
 
@@ -34,10 +25,5 @@ struct NotificationListView: View {
         }
         .listStyle(PlainListStyle())
         .navigationTitle("Scheduled notifications")
-    }
-
-    private func deleteNotification(_ id: String) {
-        NotificationStore.remove(by: id)
-        notifications = NotificationStore.fetchAll() // Refresh the list
     }
 }

@@ -27,12 +27,4 @@ class NotificationStore {
         let currentTime = Date()
         return records.filter { $0.scheduledTime > currentTime }
     }
-
-    static func remove(by id: String) {
-        var records = fetchAll()
-        records.removeAll { $0.id == id }
-        if let data = try? JSONEncoder().encode(records) {
-            UserDefaults.standard.set(data, forKey: key)
-        }
-    }
 }
