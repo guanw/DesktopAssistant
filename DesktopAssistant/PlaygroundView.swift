@@ -32,14 +32,28 @@ struct PlaygroundView: View {
     func testLlamaClient() {
         do {
             // Initialize the client with the callback
-            let llamaClient = try LlamaClient(withCallback: mainCallback)
+            let llamaClient = try LlamaClient()
 
             // Send a query
-            if let response = llamaClient.query(input_text: "State the meaning of life") {
-                playgroundState.llamaResponse = response
-                print("response: \(response)")
-            } else {
-                print("Model failed to return a response.")
+//            if let response = llamaClient.sendGenerateRequest(prompt: "State the meaning of life") {
+//                playgroundState.llamaResponse = response
+//                print("response: \(response)")
+//            } else {
+//                print("Model failed to return a response.")
+//            }
+
+            llamaClient.sendGenerateRequest(prompt: "state the meaning of life") { result in
+                switch result {
+                case .success(let data):
+                    if let responseBody = String(data: data, encoding: .utf8) {
+                        print("Response Body: \(responseBody)")
+                        playgroundState.llamaResponse = responseBody
+                    } else {
+                        print("Failed to decode response")
+                    }
+                case .failure(let error):
+                    print("Error: \(error.localizedDescription)")
+                }
             }
         } catch {
             print("Error initializing LlamaClient: \(error)")

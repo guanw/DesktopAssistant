@@ -1,51 +1,67 @@
 import Foundation
-import llmfarm_core
 
-let maxOutputLength = 256
-var total_output = 0
+// Define the request payload structure
+struct GenerateRequest: Codable {
+    let model: String
+    let prompt: String
+}
 
 class LlamaClient {
-    private var ai: AI;
-    private var callback: (_ str: String, _ time: Double) -> Bool;
 
-    func query(input_text: String) -> String? {
-        return try? self.ai.model?.predict(input_text, self.callback)
-    }
 
-    init(withCallback callback: @escaping (_ str: String, _ time: Double) -> Bool) throws {
-        self.callback = callback;
-        // TODO update gguf location
-        self.ai = AI(_modelPath: "/Users/guanw/Downloads/OpenLlama-3B-v2.Q8_0.gguf",_chatName: "chat")
-        var params:ModelAndContextParams = .default
-
-        //set custom prompt format
-        params.promptFormat = .Custom
-        params.custom_prompt_format = """
-            SYSTEM: You are a helpful, respectful and honest assistant.
-            USER: {prompt}
-            ASSISTANT:
-        """
-
-        params.use_metal = true
-
-        do {
-            let is_model_loaded = try self.ai.loadModel(ModelInference.LLama_gguf,contextParams: params)
-            if (!is_model_loaded) {
-                print("failed to load model")
-            }
-        } catch {
-            print("failed to load model \(error)")
+    // Define the function to send the POST request
+    func sendGenerateRequest(prompt: String, completion: @escaping (Result<Data, Error>) -> Void) {
+        // API URL
+        guard let url = URL(string: "http://localhost:11434/api/generate") else {
+            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
             return
         }
 
-        if ai.model == nil{
-            print( "Model load eror.")
-            exit(2)
+        // Create the request payload
+        let requestBody = GenerateRequest(model: "llama3.2", prompt: prompt)
+
+        // Convert the payload to JSON data
+        guard let jsonData = try? JSONEncoder().encode(requestBody) else {
+            completion(.failure(NSError(domain: "Encoding error", code: -1, userInfo: nil)))
+            return
         }
 
-        ai.model?.sampleParams.mirostat = 2
-        ai.model?.sampleParams.mirostat_eta = 0.1
-        ai.model?.sampleParams.mirostat_tau = 5.0
+        // Create the request
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        // Create the URL session
+        let session = URLSession.shared
+
+        // Send the request
+        let task = session.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let error = NSError(domain: "HTTP Error", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+                completion(.failure(error))
+                return
+            }
+
+            if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                completion(.success(data))
+            } else {
+                let error = NSError(domain: "No Data", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+                completion(.failure(error))
+            }
+        }
+
+        task.resume()
+        return
+    }
+
+    init() throws {
+
     }
 }
 

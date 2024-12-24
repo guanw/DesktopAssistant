@@ -1,5 +1,9 @@
 import Foundation
 
+enum GroqAPIError: Error {
+    case apiKeyNotSet(message: String)
+}
+
 class GroqAPIClient {
     private let apiKey: String
     private let model: String
@@ -13,8 +17,8 @@ class GroqAPIClient {
 
     func sendChatCompletionRequest(messages: [ChatMessage], completion: @escaping (Result<String, Error>) -> Void) {
         if (apiKey.isEmpty) {
-            let error = "groq apiKey is empty and not set yet, please type 'Command + g' to set it up"
-            Logger.shared.log(error)
+            let error = GroqAPIError.apiKeyNotSet(message: "Groq API key is empty and not set yet. Please type 'Command + g' to set it up.")
+            Logger.shared.log("\(error)")
             completion(.failure(error))
             return
         }

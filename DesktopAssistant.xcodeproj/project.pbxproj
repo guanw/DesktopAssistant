@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		631F95612CF76A0B00AFE273 /* TextToSpeech.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631F95602CF76A0B00AFE273 /* TextToSpeech.swift */; };
-		633E71842D0115470083966D /* llmfarm_core in Frameworks */ = {isa = PBXBuildFile; productRef = 633E71832D0115470083966D /* llmfarm_core */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,7 +44,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				633E71842D0115470083966D /* llmfarm_core in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,12 +57,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		631F0DDE2D1A414600205D72 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		63AE3F1F2CE1795700324A50 = {
 			isa = PBXGroup;
 			children = (
 				631F95602CF76A0B00AFE273 /* TextToSpeech.swift */,
 				63AE3F2A2CE1795700324A50 /* DesktopAssistant */,
 				63AE3F722CE689E200324A50 /* DesktopAssistantTests */,
+				631F0DDE2D1A414600205D72 /* Frameworks */,
 				63AE3F292CE1795700324A50 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -98,7 +104,6 @@
 			);
 			name = DesktopAssistant;
 			packageProductDependencies = (
-				633E71832D0115470083966D /* llmfarm_core */,
 			);
 			productName = DesktopAssistant;
 			productReference = 63AE3F282CE1795700324A50 /* DesktopAssistant.app */;
@@ -156,7 +161,6 @@
 			mainGroup = 63AE3F1F2CE1795700324A50;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				633E71822D0115050083966D /* XCRemoteSwiftPackageReference "llmfarm_core" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63AE3F292CE1795700324A50 /* Products */;
@@ -454,25 +458,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		633E71822D0115050083966D /* XCRemoteSwiftPackageReference "llmfarm_core" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/guinmoon/llmfarm_core.swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.8.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		633E71832D0115470083966D /* llmfarm_core */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 633E71822D0115050083966D /* XCRemoteSwiftPackageReference "llmfarm_core" */;
-			productName = llmfarm_core;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 63AE3F202CE1795700324A50 /* Project object */;
 }
