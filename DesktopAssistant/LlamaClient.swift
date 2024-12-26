@@ -7,15 +7,14 @@ struct GenerateRequest: Codable {
 }
 
 class LlamaClient {
-
+    @Published var url: URL?
+    @Published var isSending: Bool = false
 
     // Define the function to send the POST request
     func sendGenerateRequest(prompt: String, completion: @escaping (Result<Data, Error>) -> Void) {
-        // API URL
-        guard let url = URL(string: "http://localhost:11434/api/generate") else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
-            return
-        }
+        print("Started Send Prompt")
+        guard !prompt.isEmpty, !isSending else { return }
+        isSending = true  // Mark that a sending process has started
 
         // Create the request payload
         let requestBody = GenerateRequest(model: "llama3.2", prompt: prompt)
@@ -23,6 +22,10 @@ class LlamaClient {
         // Convert the payload to JSON data
         guard let jsonData = try? JSONEncoder().encode(requestBody) else {
             completion(.failure(NSError(domain: "Encoding error", code: -1, userInfo: nil)))
+            return
+        }
+
+        guard let url = self.url else {
             return
         }
 
@@ -61,7 +64,10 @@ class LlamaClient {
     }
 
     init() throws {
-
+        // Define the server endpoint
+        let urlString = "http://127.0.0.1:11434/api/generate"
+        // Safely unwrap the URL constructed from the urlString
+        self.url = URL(string: urlString)
     }
 }
 

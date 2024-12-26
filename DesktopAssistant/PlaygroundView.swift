@@ -29,27 +29,37 @@ struct PlaygroundView: View {
 
     }
 
-    func testLlamaClient() {
+    func testLlamaClient(prompt: String = "state the meaning of life") {
         do {
             // Initialize the client with the callback
             let llamaClient = try LlamaClient()
 
-            // Send a query
-//            if let response = llamaClient.sendGenerateRequest(prompt: "State the meaning of life") {
-//                playgroundState.llamaResponse = response
-//                print("response: \(response)")
-//            } else {
-//                print("Model failed to return a response.")
-//            }
-
-            llamaClient.sendGenerateRequest(prompt: "state the meaning of life") { result in
+            llamaClient.sendGenerateRequest(prompt: prompt) { result in
                 switch result {
                 case .success(let data):
-                    if let responseBody = String(data: data, encoding: .utf8) {
-                        print("Response Body: \(responseBody)")
-                        playgroundState.llamaResponse = responseBody
-                    } else {
-                        print("Failed to decode response")
+                    guard let responseString = String(data: data, encoding: .utf8) else {
+                        print("Failed to convert data to string")
+                        return
+                    }
+                    let jsonStrings = responseString.split(separator: "\n")
+
+                    var concatenatedResponse = ""
+
+                    for jsonString in jsonStrings {
+                        // Convert each JSON string back to Data for decoding
+                        if let jsonData = jsonString.data(using: .utf8) {
+                            do {
+                                // Decode the JSON string into an OllamaSingleResponse
+                                let singleResponse = try JSONDecoder().decode(OllamaSingleResponse.self, from: jsonData)
+                                // Append the `response` field to the result
+                                concatenatedResponse += singleResponse.response
+                            } catch {
+                                print("Failed to decode JSON object: \(error)")
+                            }
+                        }
+                    }
+                    DispatchQueue.main.async {
+                        playgroundState.llamaResponse = concatenatedResponse
                     }
                 case .failure(let error):
                     print("Error: \(error.localizedDescription)")
