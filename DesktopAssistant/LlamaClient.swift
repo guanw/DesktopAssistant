@@ -12,7 +12,7 @@ class LlamaClient {
 
     // Define the function to send the POST request
     func sendGenerateRequest(prompt: String, completion: @escaping (Result<Data, Error>) -> Void) {
-        print("Started Send Prompt")
+        Logger.shared.log("Started Send Prompt")
         guard !prompt.isEmpty, !isSending else { return }
         isSending = true  // Mark that a sending process has started
 
@@ -41,7 +41,7 @@ class LlamaClient {
         // Send the request
         let task = session.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("Error: \(error.localizedDescription)")
+                Logger.shared.log("Error: \(error.localizedDescription)")
                 return
             }
 

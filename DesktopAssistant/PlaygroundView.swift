@@ -38,7 +38,7 @@ struct PlaygroundView: View {
                 switch result {
                 case .success(let data):
                     guard let responseString = String(data: data, encoding: .utf8) else {
-                        print("Failed to convert data to string")
+                        Logger.shared.log("Failed to convert data to string")
                         return
                     }
                     let jsonStrings = responseString.split(separator: "\n")
@@ -54,7 +54,7 @@ struct PlaygroundView: View {
                                 // Append the `response` field to the result
                                 concatenatedResponse += singleResponse.response
                             } catch {
-                                print("Failed to decode JSON object: \(error)")
+                                Logger.shared.log("Failed to decode JSON object: \(error)")
                             }
                         }
                     }
@@ -62,11 +62,11 @@ struct PlaygroundView: View {
                         playgroundState.llamaResponse = concatenatedResponse
                     }
                 case .failure(let error):
-                    print("Error: \(error.localizedDescription)")
+                    Logger.shared.log("Error: \(error.localizedDescription)")
                 }
             }
         } catch {
-            print("Error initializing LlamaClient: \(error)")
+            Logger.shared.log("Error initializing LlamaClient: \(error)")
         }
     }
 

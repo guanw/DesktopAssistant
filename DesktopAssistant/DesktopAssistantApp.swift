@@ -18,11 +18,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     override init() {
         super.init()
-        print("AppDelegate initialized")
+        Logger.shared.log("AppDelegate initialized")
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        print("applicationDidFinishLaunching")
+        Logger.shared.log("applicationDidFinishLaunching")
         setupMenuBar()
     }
 
