@@ -8,13 +8,11 @@ struct GenerateRequest: Codable {
 
 class LlamaClient {
     @Published var url: URL?
-    @Published var isSending: Bool = false
 
     // Define the function to send the POST request
     func sendGenerateRequest(prompt: String, completion: @escaping (Result<Data, Error>) -> Void) {
         Logger.shared.log("Started Send Prompt")
-        guard !prompt.isEmpty, !isSending else { return }
-        isSending = true  // Mark that a sending process has started
+        guard !prompt.isEmpty else { return }
 
         // Create the request payload
         let requestBody = GenerateRequest(model: "llama3.2", prompt: prompt)
@@ -45,13 +43,13 @@ class LlamaClient {
                 return
             }
 
-            guard let httpResponse = response as? HTTPURLResponse else {
+            guard let _ = response as? HTTPURLResponse else {
                 let error = NSError(domain: "HTTP Error", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
                 completion(.failure(error))
                 return
             }
 
-            if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+            if let data = data {
                 completion(.success(data))
             } else {
                 let error = NSError(domain: "No Data", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])

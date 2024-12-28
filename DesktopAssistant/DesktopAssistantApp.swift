@@ -4,6 +4,15 @@ import SwiftUI
 struct DesktopAssistantApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    init() {
+        // Single-instance check
+        let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
+        if runningApps.count > 1 {
+            print("Another instance is already running. Exiting...")
+            exit(0)
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
