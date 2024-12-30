@@ -138,7 +138,9 @@ struct ContentView: View {
                 case .success(let result):
                     self.parseSuccessReply(messages: chatState.messages, result: result, transcribedText: transcribedText)
                 case .failure(let error):
-                    chatState.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
+                    DispatchQueue.main.async {
+                        chatState.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
+                    }
                 }
 
                 // reset
@@ -178,16 +180,20 @@ struct ContentView: View {
             Logger.shared.log("reminder scheduled result: \(result)")
             let timeTuple = RemindMeUtils.parseTimeFromText(text: transcribedText)
             if (timeTuple == nil) {
-                chatState.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
+                DispatchQueue.main.async {
+                    chatState.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
+                }
                 Logger.shared.log("failed to extract hour and minute for reminder")
                 return
             }
             RemindMeUtils.scheduleNotif(text: result, timeTuple: timeTuple!)
-            chatState.messages.append(.message(Message(text: String(
-                format: "reminder scheduled in %d hour(s) and %d minute(s)",
-                timeTuple!.hours,
-                timeTuple!.minutes
-            ), role: .System)))
+            DispatchQueue.main.async {
+                chatState.messages.append(.message(Message(text: String(
+                    format: "reminder scheduled in %d hour(s) and %d minute(s)",
+                    timeTuple!.hours,
+                    timeTuple!.minutes
+                ), role: .System)))
+            }
             return
         }
         DispatchQueue.main.async {
@@ -198,7 +204,9 @@ struct ContentView: View {
 
     func createInput(transcribedText: String) {
         if model == STABLE_MODEL {
-            chatState.messages.append(.message(Message(text: transcribedText, role: .User)))
+            DispatchQueue.main.async {
+                chatState.messages.append(.message(Message(text: transcribedText, role: .User)))
+            }
         } else if model == MULTI_MODAL_MODEL {
             var content = [MultiModalMessageContent(text: transcribedText)]
             if let selectedFileUrl = imageState.selectedFileUrl {
@@ -213,12 +221,13 @@ struct ContentView: View {
                     )
                 }
             }
-            chatState.messages.append(
-                .multiModalMessage(
-                    MultiModalMessage(role: .User, content: content)
+            DispatchQueue.main.async {
+                chatState.messages.append(
+                    .multiModalMessage(
+                        MultiModalMessage(role: .User, content: content)
+                    )
                 )
-            )
-
+            }
         }
     }
 }
