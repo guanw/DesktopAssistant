@@ -45,7 +45,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         playgroundMenuItem.submenu = desktopAssistantMenu
         mainMenu.addItem(playgroundMenuItem)
 
-        let newPlaygroundItem = NSMenuItem(title: "New playground", action: #selector(openPlaygroundWindow), keyEquivalent: "p")
         let toggleTextInputItem = NSMenuItem(
             title: "Toggle text input",
             action: #selector(toggleTextInput),
@@ -61,10 +60,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(openNotificationCenter),
             keyEquivalent: "n"
         )
-        desktopAssistantMenu.addItem(newPlaygroundItem)
+        let toggleTransformResponseToAudio = NSMenuItem(
+            title: "Audio output",
+            action: #selector(toggleAudioOutput),
+            keyEquivalent: "a"
+        )
+        toggleTransformResponseToAudio.state = AppState.shared.shouldTranscribeToAudio ? .on: .off
+        let newPlaygroundItem = NSMenuItem(title: "New playground", action: #selector(openPlaygroundWindow), keyEquivalent: "p")
+
+
         desktopAssistantMenu.addItem(toggleTextInputItem)
         desktopAssistantMenu.addItem(setUpGroqApiKey)
         desktopAssistantMenu.addItem(notificationCenter)
+        desktopAssistantMenu.addItem(toggleTransformResponseToAudio)
+        desktopAssistantMenu.addItem(NSMenuItem.separator())
+        desktopAssistantMenu.addItem(newPlaygroundItem)
 
         NSApp.mainMenu = mainMenu
     }
@@ -160,4 +170,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         notificationCenterWindow?.makeKeyAndOrderFront(nil)
     }
 
+    @objc func toggleAudioOutput(_ sender: NSMenuItem) {
+        AppState.shared.shouldTranscribeToAudio.toggle()
+        sender.state = AppState.shared.shouldTranscribeToAudio ? .on : .off
+    }
 }

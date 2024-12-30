@@ -148,9 +148,7 @@ struct ContentView: View {
                 }
 
                 self.cleanupTempScreenshotFile()
-
             }
-
         }
     }
 

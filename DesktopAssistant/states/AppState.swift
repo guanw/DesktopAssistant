@@ -7,5 +7,6 @@ let model = MULTI_MODAL_MODEL
 class AppState {
     static let shared = AppState()
     var apiClient: GroqAPIClient = GroqAPIClient(apiKey: "", model: model)
+    var shouldTranscribeToAudio = true
 }
 

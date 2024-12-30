@@ -5,6 +5,9 @@ class TextToSpeech {
     private var synthesizer = AVSpeechSynthesizer()
 
     func speak(_ text: String) {
+        if (!AppState.shared.shouldTranscribeToAudio) {
+            return
+        }
         // Create a speech utterance with the provided text
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US") // Set language
