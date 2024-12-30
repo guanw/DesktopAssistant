@@ -1,4 +1,6 @@
 import SwiftUI
+import Carbon
+import AVFoundation
 
 @main
 struct DesktopAssistantApp: App {
@@ -24,6 +26,8 @@ struct DesktopAssistantApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var groqApiKeyWindow: NSWindow?
     private var notificationCenterWindow: NSWindow?
+    var hotKeyRef: EventHotKeyRef?
+    static var shared: AppDelegate?
 
     override init() {
         super.init()
@@ -32,7 +36,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.shared.log("applicationDidFinishLaunching")
+        AppDelegate.shared = self
         setupMenuBar()
+
+        registerHotKey()
+        setupHotKeyHandler()
+    }
+
+
+
+    func registerHotKey() {
+        guard let signature = FourCharCode("htk1") else {
+            fatalError("Failed to create FourCharCode from 'a1b2'")
+        }
+
+        let hotKeyId = EventHotKeyID(signature: signature, id: 1)
+        let options: OptionBits = 0
+        RegisterEventHotKey(UInt32(kVK_ANSI_L), UInt32(cmdKey), hotKeyId, GetApplicationEventTarget(), options, &hotKeyRef)
+    }
+
+    func setupHotKeyHandler() {
+        let eventSpec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+        InstallEventHandler(GetApplicationEventTarget(), hotKeyEventHandler, 1, [eventSpec], nil, nil)
+    }
+
+    func handleHotKey() {
+        print("handle hot key triggered")
+        // TODO bridge the listening function to this
     }
 
     func setupMenuBar() {
@@ -173,5 +203,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func toggleAudioOutput(_ sender: NSMenuItem) {
         AppState.shared.shouldTranscribeToAudio.toggle()
         sender.state = AppState.shared.shouldTranscribeToAudio ? .on : .off
+    }
+}
+
+func hotKeyEventHandler(nextHandler: EventHandlerCallRef?, event: EventRef?, userData: UnsafeMutableRawPointer?) -> OSStatus {
+    guard let event = event else { return noErr }
+
+    // Check for the hotkey event kind
+    let eventKind = GetEventKind(event)
+    if eventKind == UInt32(kEventHotKeyPressed) {
+        AppDelegate.shared?.handleHotKey() // Call the app's hotkey handler
+    }
+
+    return noErr
+}
+
+extension OSType {
+    init?(_ string: String) {
+        guard string.count == 4 else { return nil }
+        self = string.utf8.reduce(0) { ($0 << 8) + UInt32($1) }
     }
 }
