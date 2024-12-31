@@ -2,6 +2,7 @@ import AVFoundation
 import Speech
 
 class SpeechToTextManager: NSObject, ObservableObject, SFSpeechRecognizerDelegate {
+    static let shared = SpeechToTextManager()
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
