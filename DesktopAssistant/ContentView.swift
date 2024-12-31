@@ -1,92 +1,37 @@
 import SwiftUI
 import Speech
 
-
-struct KeyPressResponder: NSViewRepresentable {
-    var onKeyPress: (() -> Void)?
-
-    func makeNSView(context: Context) -> KeyPressResponderView {
-        return KeyPressResponderView(onKeyPress: onKeyPress)
-    }
-
-    func updateNSView(_ nsView: KeyPressResponderView, context: Context) {}
-}
-
-// Custom NSView to handle keypress events
-class KeyPressResponderView: NSView {
-    var onKeyPress: (() -> Void)?
-
-    init(onKeyPress: (() -> Void)?) {
-        self.onKeyPress = onKeyPress
-        super.init(frame: .zero)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func keyDown(with event: NSEvent) {
-        super.keyDown(with: event)
-
-        // Detect Command + L keypress
-        if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "l" {
-            Logger.shared.log("Command + L pressed")
-            onKeyPress?()  // Trigger the passed callback
-        }
-
-        if event.keyCode == 53 {
-            Logger.shared.log("Esc key pressed")
-            TextToSpeech.shared.stop()
-        }
-    }
-
-    override var acceptsFirstResponder: Bool {
-        return true
-    }
-
-    override func becomeFirstResponder() -> Bool {
-        return true
-    }
-}
-
 struct ContentView: View {
     @StateObject private var speechManager = SpeechToTextManager()
-    @StateObject private var recordingState = RecordingState()
-    @StateObject private var chatState = ChatState()
-    @StateObject private var imageState = ImageState()
     @State private var isAuthorized = false
     @State private var showFloatingWindow = false
     
 
     var body: some View {
         VStack() {
-            KeyPressResponder {
-                handleKeyPress()
-            }
-            .frame(width: 0, height: 0)
 
-            ChatHistory(chatState: self.chatState)
+            ChatHistory(chatState: ChatState.shared)
 
             HStack () {
-                ImageAttachment(imageState: self.imageState)
+                ImageAttachment(imageState: ImageState.shared)
 
-                ScreenshotButton(imageState: self.imageState)
+                ScreenshotButton(imageState: ImageState.shared)
             }
 
 
             TranscribedText(
-                recordingState: recordingState,
-                chatState: chatState
+                recordingState: RecordingState.shared,
+                chatState: ChatState.shared
             )
 
-            RecordingStateIndicator(recordingState: self.recordingState)
+            RecordingStateIndicator(recordingState: RecordingState.shared)
 
             if !isAuthorized {
                 Text("Please enable speech recognition permission in System Settings")
                     .foregroundColor(.red)
             }
 
-            InputBox(sendRequest: self.sendRequestToLargeLanguageModel)
+            InputBox(sendRequest: ContentView.sendRequestToLargeLanguageModel)
         }
         .frame(width: 500, height: 600)
         .background(Color.gray.opacity(0.2))
@@ -110,43 +55,24 @@ struct ContentView: View {
         return apiKey
     }
 
-    private func handleKeyPress() {
-        // Start/Stop speech recording on Command+L press
-        if !recordingState.isRecording {
-            chatState.transcribedText = ""
-            do {
-                speechManager.onTranscription = { text in
-                    chatState.transcribedText = text
-                }
-                try speechManager.startRecording()
-            } catch {
-                Logger.shared.log("Failed to start recording: \(error)")
-            }
-        } else {
-            speechManager.stopRecording()
-            self.sendRequestToLargeLanguageModel(transcribedText: chatState.transcribedText)
-        }
-        recordingState.isRecording.toggle()
-    }
-
-    private func sendRequestToLargeLanguageModel(transcribedText: String) {
+    public static func sendRequestToLargeLanguageModel(transcribedText: String) {
         if (!transcribedText.isEmpty) {
-            self.createInput(transcribedText: transcribedText)
-            chatState.waitingForReply = true;
-            AppState.shared.apiClient.sendChatCompletionRequest(messages: chatState.messages) { result in
+            ContentView.createInput(transcribedText: transcribedText)
+            ChatState.shared.waitingForReply = true;
+            AppState.shared.apiClient.sendChatCompletionRequest(messages: ChatState.shared.messages) { result in
                 switch result {
                 case .success(let result):
-                    self.parseSuccessReply(messages: chatState.messages, result: result, transcribedText: transcribedText)
+                    self.parseSuccessReply(messages: ChatState.shared.messages, result: result, transcribedText: transcribedText)
                 case .failure(let error):
                     DispatchQueue.main.async {
-                        chatState.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
+                        ChatState.shared.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
                     }
                 }
 
                 // reset
                 DispatchQueue.main.async {
-                    chatState.waitingForReply = false;
-                    chatState.transcribedText = ""
+                    ChatState.shared.waitingForReply = false;
+                    ChatState.shared.transcribedText = ""
                 }
 
                 self.cleanupTempScreenshotFile()
@@ -154,20 +80,20 @@ struct ContentView: View {
         }
     }
 
-    private func cleanupTempScreenshotFile() {
+    static private func cleanupTempScreenshotFile() {
         let fileManager = FileManager.default
-        if (imageState.selectedFileUrl == nil) {
+        if (ImageState.shared.selectedFileUrl == nil) {
             return
         }
         do {
             defer {
-                imageState.selectedFileUrl = nil
+                ImageState.shared.selectedFileUrl = nil
             }
-            if fileManager.fileExists(atPath: imageState.selectedFileUrl!.path) {
-                try fileManager.removeItem(at: imageState.selectedFileUrl!)
+            if fileManager.fileExists(atPath: ImageState.shared.selectedFileUrl!.path) {
+                try fileManager.removeItem(at: ImageState.shared.selectedFileUrl!)
                 Logger.shared.log("File deleted successfully.")
             } else {
-                Logger.shared.log("File does not exist at \(imageState.selectedFileUrl!.path).")
+                Logger.shared.log("File does not exist at \(ImageState.shared.selectedFileUrl!.path).")
             }
         } catch {
             Logger.shared.log("Failed to delete file: \(error.localizedDescription)")
@@ -175,20 +101,20 @@ struct ContentView: View {
 
     }
 
-    private func parseSuccessReply(messages: [ChatMessage], result: String, transcribedText: String) {
+    static private func parseSuccessReply(messages: [ChatMessage], result: String, transcribedText: String) {
         if (CommandParser.isReminderCommand) {
             Logger.shared.log("reminder scheduled result: \(result)")
             let timeTuple = RemindMeUtils.parseTimeFromText(text: transcribedText)
             if (timeTuple == nil) {
                 DispatchQueue.main.async {
-                    chatState.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
+                    ChatState.shared.messages.append(.message(Message(text: "failed to extract hour and minute for reminder", role: .System)))
                 }
                 Logger.shared.log("failed to extract hour and minute for reminder")
                 return
             }
             RemindMeUtils.scheduleNotif(text: result, timeTuple: timeTuple!)
             DispatchQueue.main.async {
-                chatState.messages.append(.message(Message(text: String(
+                ChatState.shared.messages.append(.message(Message(text: String(
                     format: "reminder scheduled in %d hour(s) and %d minute(s)",
                     timeTuple!.hours,
                     timeTuple!.minutes
@@ -197,19 +123,19 @@ struct ContentView: View {
             return
         }
         DispatchQueue.main.async {
-            chatState.messages.append(.message(Message(text: result, role: .System)))
+            ChatState.shared.messages.append(.message(Message(text: result, role: .System)))
         }
         TextToSpeech.shared.speak(result)
     }
 
-    func createInput(transcribedText: String) {
+    static func createInput(transcribedText: String) {
         if model == STABLE_MODEL {
             DispatchQueue.main.async {
-                chatState.messages.append(.message(Message(text: transcribedText, role: .User)))
+                ChatState.shared.messages.append(.message(Message(text: transcribedText, role: .User)))
             }
         } else if model == MULTI_MODAL_MODEL {
             var content = [MultiModalMessageContent(text: transcribedText)]
-            if let selectedFileUrl = imageState.selectedFileUrl {
+            if let selectedFileUrl = ImageState.shared.selectedFileUrl {
                 let imageUrl = ImageUtil.encodeImageToBase64(
                     imagePath: selectedFileUrl.path()
                 )
@@ -222,7 +148,7 @@ struct ContentView: View {
                 }
             }
             DispatchQueue.main.async {
-                chatState.messages.append(
+                ChatState.shared.messages.append(
                     .multiModalMessage(
                         MultiModalMessage(role: .User, content: content)
                     )

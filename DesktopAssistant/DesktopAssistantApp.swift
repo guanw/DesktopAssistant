@@ -61,8 +61,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func handleHotKey() {
-        print("handle hot key triggered")
-        // TODO bridge the listening function to this
+        Logger.shared.log("handle hot key triggered")
+
+        // Start/Stop speech recording on Command+L press
+        if !RecordingState.shared.isRecording {
+            ChatState.shared.transcribedText = ""
+            do {
+                SpeechToTextManager.shared.onTranscription = { text in
+                    ChatState.shared.transcribedText = text
+                }
+                try SpeechToTextManager.shared.startRecording()
+            } catch {
+                Logger.shared.log("Failed to start recording: \(error)")
+            }
+        } else {
+            SpeechToTextManager.shared.stopRecording()
+            ContentView.sendRequestToLargeLanguageModel(
+                transcribedText: ChatState.shared.transcribedText
+            )
+        }
+        RecordingState.shared.isRecording.toggle()
     }
 
     func setupMenuBar() {
