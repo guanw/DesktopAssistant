@@ -173,7 +173,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             // Store the API key and close the window
             DispatchQueue.main.async {
-                AppState.shared.apiClient = GroqAPIClient(apiKey: apiKey, model: model)
+                AppState.shared.groqApiClient = GroqAPIClient(apiKey: apiKey, model: model)
             }
             self.groqApiKeyWindow?.close()
             self.groqApiKeyWindow = nil // Reset the reference

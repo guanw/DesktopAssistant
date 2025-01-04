@@ -10,6 +10,8 @@ struct ContentView: View {
     var body: some View {
         VStack() {
 
+            InferenceBackendSelectionView(appState: AppState.shared)
+
             ChatHistory(chatState: ChatState.shared)
 
             HStack () {
@@ -43,23 +45,11 @@ struct ContentView: View {
         }
     }
 
-
-    private func loadAPIKey() -> String? {
-        guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
-              let xml = FileManager.default.contents(atPath: path),
-              let config = try? PropertyListSerialization.propertyList(from: xml, options: [], format: nil) as? [String: Any],
-              let apiKey = config["GroqAPIKey"] as? String else {
-            Logger.shared.log("Failed to load API key from Config.plist")
-            return nil
-        }
-        return apiKey
-    }
-
     public static func sendRequestToLargeLanguageModel(transcribedText: String) {
         if (!transcribedText.isEmpty) {
             ContentView.createInput(transcribedText: transcribedText)
             ChatState.shared.waitingForReply = true;
-            AppState.shared.apiClient.sendChatCompletionRequest(messages: ChatState.shared.messages) { result in
+            AppState.shared.groqApiClient.sendChatCompletionRequest(messages: ChatState.shared.messages) { result in
                 switch result {
                 case .success(let result):
                     self.parseSuccessReply(messages: ChatState.shared.messages, result: result, transcribedText: transcribedText)
