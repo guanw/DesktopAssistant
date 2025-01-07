@@ -15,7 +15,7 @@ class GroqAPIClient {
         self.model = model
     }
 
-    func sendChatCompletionRequest(messages: [ChatMessage], completion: @escaping (Result<String, Error>) -> Void) {
+    func sendChatCompletionRequest(messages: [ChatMessage], latestMessage: String, completion: @escaping (Result<String, Error>) -> Void) {
         if (apiKey.isEmpty) {
             let error = GroqAPIError.apiKeyNotSet(message: "Groq API key is empty and not set yet. Please type 'Command + g' to set it up.")
             Logger.shared.log("\(error)")
@@ -35,7 +35,7 @@ class GroqAPIClient {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let body = self.formatBody(messages: messages)
+        let body = self.formatBody(messages: messages, latestMessage: latestMessage)
 
         // Convert the JSON body to data
         do {
@@ -74,9 +74,9 @@ class GroqAPIClient {
         task.resume()
     }
 
-    func formatBody(messages: [ChatMessage]) -> [String: Any] {
+    func formatBody(messages: [ChatMessage], latestMessage: String) -> [String: Any] {
         var formattedMessages = self.formatMessages(messages: messages)
-        formattedMessages = self.appendAssistantMessage(body: formattedMessages, latestMessage: messages.last)
+        formattedMessages = self.appendAssistantMessage(body: formattedMessages, latestMessage: latestMessage)
         return [
             "messages": formattedMessages,
             "model": self.model
@@ -108,24 +108,17 @@ class GroqAPIClient {
         }
     }
 
-    func appendAssistantMessage(body: [[String : Any]], latestMessage: ChatMessage?) -> [[String : Any]] {
+    func appendAssistantMessage(body: [[String : Any]], latestMessage: String) -> [[String : Any]] {
         var messages = body
 
         // add assistant to messages
-        var lastMessageUnzipped = ""
-        switch latestMessage {
-        case .message(let message):
-            lastMessageUnzipped = message.text
-        case .multiModalMessage(let multiModalMessage):
-            lastMessageUnzipped = multiModalMessage.content.first?.text ?? ""
-        default:
-            lastMessageUnzipped = ""
-        }
-        if (lastMessageUnzipped.lowercased().contains("code")) {
+
+        let lowercaseLatestMessage = latestMessage.lowercased()
+        if (lowercaseLatestMessage.contains("code")) {
             messages.append(["role": "assistant", "content": "make sure if the user is asking you to generate some code, just output the code itself, don't add any non-code context. But please only do this if you see keyword code from message"])
-        } else if (lastMessageUnzipped.lowercased().contains(REMIND_ME_KEY)) {
+        } else if (lowercaseLatestMessage.contains(REMIND_ME_KEY)) {
             CommandParser.isReminderCommand = true;
-            let prunedLastMessage = lastMessageUnzipped.lowercased().replacingOccurrences(of: REMIND_ME_KEY, with: "");
+            let prunedLastMessage = lowercaseLatestMessage.replacingOccurrences(of: REMIND_ME_KEY, with: "");
             messages.append(["role": "system", "content": """
                 The user wants to schedule a task. extract the action user would like to be reminded of
                 as response
@@ -136,7 +129,7 @@ class GroqAPIClient {
                 Request: "Remind me to drink water in 3 hours."
                 Response: "Drink water"
 
-                Request: "\(lastMessageUnzipped)"
+                Request: "\(lowercaseLatestMessage)"
                 Response:
             """])
         }

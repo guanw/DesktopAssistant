@@ -49,7 +49,11 @@ struct ContentView: View {
         if (!transcribedText.isEmpty) {
             ContentView.createInput(transcribedText: transcribedText)
             ChatState.shared.waitingForReply = true;
-            AppState.shared.groqApiClient.sendChatCompletionRequest(messages: ChatState.shared.messages) { result in
+            AppState.shared.groqApiClient
+                .sendChatCompletionRequest(
+                    messages: ChatState.shared.messages,
+                    latestMessage: transcribedText
+                ) { result in
                 switch result {
                 case .success(let result):
                     self.parseSuccessReply(messages: ChatState.shared.messages, result: result, transcribedText: transcribedText)
