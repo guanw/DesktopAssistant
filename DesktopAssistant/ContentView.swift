@@ -8,39 +8,41 @@ struct ContentView: View {
     
 
     var body: some View {
-        VStack() {
+        GeometryReader { geometry in
+            VStack {
 
-            InferenceBackendSelectionView(appState: AppState.shared)
+                InferenceBackendSelectionView(appState: AppState.shared)
 
-            ChatHistory(chatState: ChatState.shared)
+                ChatHistory(chatState: ChatState.shared, containerSize: geometry.size)
 
-            HStack () {
-                ImageAttachment(imageState: ImageState.shared)
+                HStack () {
+                    ImageAttachment(imageState: ImageState.shared)
 
-                ScreenshotButton(imageState: ImageState.shared)
+                    ScreenshotButton(imageState: ImageState.shared)
+                }
+
+
+                TranscribedText(
+                    recordingState: RecordingState.shared,
+                    chatState: ChatState.shared
+                )
+
+                RecordingStateIndicator(recordingState: RecordingState.shared)
+
+                if !isAuthorized {
+                    Text("Please enable speech recognition permission in System Settings")
+                        .foregroundColor(.red)
+                }
+
+                InputBox(sendRequest: ContentView.sendRequestToLargeLanguageModel)
             }
-
-
-            TranscribedText(
-                recordingState: RecordingState.shared,
-                chatState: ChatState.shared
-            )
-
-            RecordingStateIndicator(recordingState: RecordingState.shared)
-
-            if !isAuthorized {
-                Text("Please enable speech recognition permission in System Settings")
-                    .foregroundColor(.red)
-            }
-
-            InputBox(sendRequest: ContentView.sendRequestToLargeLanguageModel)
-        }
-        .frame(width: 500, height: 600)
-        .background(Color.gray.opacity(0.2))
-        .cornerRadius(12)
-        .onAppear {
-            speechManager.requestAuthorization { authorized in
-                isAuthorized = authorized
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(12)
+            .onAppear {
+                speechManager.requestAuthorization { authorized in
+                    isAuthorized = authorized
+                }
             }
         }
     }

@@ -18,8 +18,8 @@ struct DesktopAssistantApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .fixedSize()
-        }.windowResizability(.contentSize)
+                .frame(minWidth: Constants.APP_MIN_WIDTH, minHeight: Constants.APP_MIN_HEIGHT)
+        }
     }
 }
 

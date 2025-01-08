@@ -2,7 +2,11 @@ import SwiftUI
 
 struct ChatHistory: View {
     @ObservedObject var chatState : ChatState
+    let containerSize: CGSize
     var body: some View {
+        let innerWidth = containerSize.width - Constants.CHAT_HISTORY_PADDING
+        let innerHeight = containerSize.height - Constants.CHAT_HISTORY_PADDING
+
         VStack {
             ScrollViewReader { scrollView in
                 ScrollView {
@@ -22,7 +26,7 @@ struct ChatHistory: View {
                 }
             }
         }
-        .frame(width: Constants.CHAT_WIDTH, height: 400)
+        .frame(width: innerWidth, height: Constants.CHAT_HISTORY_WIDTH)
         .background(Color.black)
         .cornerRadius(12)
         .shadow(radius: 5)
