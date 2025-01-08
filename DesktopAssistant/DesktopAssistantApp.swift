@@ -13,6 +13,8 @@ struct DesktopAssistantApp: App {
             print("Another instance is already running. Exiting...")
             exit(0)
         }
+
+        DesktopAssistantApplication.shared.setActivationPolicy(.regular)
     }
 
     var body: some Scene {
