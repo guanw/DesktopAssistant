@@ -126,9 +126,7 @@ struct ContentView: View {
 
     static func createInput(transcribedText: String) {
         if model == STABLE_MODEL {
-            DispatchQueue.main.async {
-                ChatState.shared.messages.append(.message(Message(text: transcribedText, role: .User)))
-            }
+            ChatState.shared.messages.append(.message(Message(text: transcribedText, role: .User)))
         } else if model == MULTI_MODAL_MODEL {
             var content = [MultiModalMessageContent(text: transcribedText)]
             if let selectedFileUrl = ImageState.shared.selectedFileUrl {
@@ -143,13 +141,11 @@ struct ContentView: View {
                     )
                 }
             }
-            DispatchQueue.main.async {
-                ChatState.shared.messages.append(
-                    .multiModalMessage(
-                        MultiModalMessage(role: .User, content: content)
-                    )
+            ChatState.shared.messages.append(
+                .multiModalMessage(
+                    MultiModalMessage(role: .User, content: content)
                 )
-            }
+            )
         }
     }
 }

@@ -112,7 +112,6 @@ class GroqAPIClient {
         var messages = body
 
         // add assistant to messages
-
         let lowercaseLatestMessage = latestMessage.lowercased()
         if (lowercaseLatestMessage.contains("code")) {
             messages.append(["role": "assistant", "content": "make sure if the user is asking you to generate some code, just output the code itself, don't add any non-code context. But please only do this if you see keyword code from message"])
