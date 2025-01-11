@@ -35,9 +35,9 @@ struct ChatHistory: View {
     private func messageView(for chatMessage: ChatMessage) -> AnyView {
         switch chatMessage {
         case .message(let message):
-            return AnyView(ChatBubble(message: message).padding(5))
+            return AnyView(ChatBubble(message: message))
         case .multiModalMessage(let multiModalMessage):
-            return AnyView(ChatBubble(message: Message(text: multiModalMessage.content.first?.text ?? "", role: .User)).padding(5))
+            return AnyView(ChatBubble(message: Message(text: multiModalMessage.content.first?.text ?? "", role: .User)))
         }
     }
 }

@@ -10,28 +10,27 @@ struct ChatBubble: View {
             switch message.role {
             case .User:
                 Spacer()
-                userBubble
+                UserBubble
             case .System:
                 Spacer()
-                systemBubble
+                SystemBubble
             case .Assistant:
                 Spacer()
-                systemBubble
+                SystemBubble
             }
         }
-        .padding(message.role == .User ? .leading : .trailing, 50)
-        .padding(.vertical, 5)
     }
     
     @ViewBuilder
-    private var systemBubble: some View {
+    private var SystemBubble: some View {
         HStack(spacing: 8) {
+            // Text or multi-modal message content
             if let textMessage = message as? Message {
                 Text(textMessage.text)
                     .padding(10)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
-                    .frame(maxWidth: 300, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading) // Ensure text bubble spans width and aligns left
                     .textSelection(.enabled)
             } else if let multiModalMessage = message as? MultiModalMessage {
                 VStack(alignment: .leading, spacing: 5) {
@@ -56,62 +55,68 @@ struct ChatBubble: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading) // Align content to the left
             }
 
-            Button(action: {
-                if let textMessage = message as? Message {
-                    copyToClipboard(textMessage.text)
-                }
-            }) {
-                Image(systemName: "doc.on.doc")
-                    .foregroundColor(.gray)
-                    .padding(8)
-                    .background(isPressed ? Color.blue : Color.gray.opacity(0.1))
-                    .clipShape(Circle())
-                    .scaleEffect(isPressed ? 1.1 : 1.0)
-                    .animation(.spring(), value: isPressed)
-            }
-            .buttonStyle(PlainButtonStyle())
-            .onTapGesture {
-                self.isPressed.toggle()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    self.isPressed = false
-                }
-            }
+//            // Copy button aligned to the right of the HStack
+//            Button(action: {
+//                if let textMessage = message as? Message {
+//                    copyToClipboard(textMessage.text)
+//                }
+//            }) {
+//                Image(systemName: "doc.on.doc")
+//                    .foregroundColor(.gray)
+//                    .padding(8)
+//                    .background(isPressed ? Color.blue : Color.gray.opacity(0.1))
+//                    .clipShape(Circle())
+//                    .scaleEffect(isPressed ? 1.1 : 1.0)
+//                    .animation(.spring(), value: isPressed)
+//            }
+//            .buttonStyle(PlainButtonStyle())
+//            .onTapGesture {
+//                self.isPressed.toggle()
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//                    self.isPressed = false
+//                }
+//            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading) // Ensure the HStack respects the container size
+        .padding(.trailing, 16) // Add padding to ensure proper spacing from the container edge
     }
 
     @ViewBuilder
-    private var userBubble: some View {
-        if let textMessage = message as? Message {
-            Text(textMessage.text)
-                .padding(10)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-                .frame(maxWidth: 300, alignment: .trailing)
-                .textSelection(.enabled)
-        } else if let multiModalMessage = message as? MultiModalMessage {
-            VStack(alignment: .trailing, spacing: 5) {
-                ForEach(multiModalMessage.content) { content in
-                    switch content.type {
-                    case .Text:
-                        if let text = content.text {
-                            Text(text)
-                                .padding(10)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                                .textSelection(.enabled)
-                        }
-                    case .Image_url:
-                        if let imageUrl = content.imageUrl {
-                            Text("Image: \(imageUrl)") // Placeholder for image handling
-                                .padding(10)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                                .textSelection(.enabled)
+    private var UserBubble: some View {
+        HStack(spacing: 8) {
+            if let textMessage = message as? Message {
+                Text(textMessage.text)
+                    .padding(10)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .textSelection(.enabled)
+            } else if let multiModalMessage = message as? MultiModalMessage {
+                VStack(spacing: 5) {
+                    ForEach(multiModalMessage.content) { content in
+                        switch content.type {
+                        case .Text:
+                            if let text = content.text {
+                                Text(text)
+                                    .padding(10)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                                    .textSelection(.enabled)
+                            }
+                        case .Image_url:
+                            if let imageUrl = content.imageUrl {
+                                Text("Image: \(imageUrl)") // Placeholder for image handling
+                                    .padding(10)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                                    .textSelection(.enabled)
+                            }
                         }
                     }
                 }
