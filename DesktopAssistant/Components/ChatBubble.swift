@@ -23,14 +23,14 @@ struct ChatBubble: View {
     
     @ViewBuilder
     private var SystemBubble: some View {
-        HStack(spacing: 8) {
+        HStack(alignment: .center, spacing: 4) {
             // Text or multi-modal message content
             if let textMessage = message as? Message {
                 Text(textMessage.text)
                     .padding(10)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
-                    .frame(maxWidth: .infinity, alignment: .leading) // Ensure text bubble spans width and aligns left
+                    .frame(alignment: .leading) // Ensure text bubble spans width and aligns left
                     .textSelection(.enabled)
             } else if let multiModalMessage = message as? MultiModalMessage {
                 VStack(alignment: .leading, spacing: 5) {
@@ -55,33 +55,32 @@ struct ChatBubble: View {
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading) // Align content to the left
+                .frame(alignment: .leading) // Align content to the left
             }
 
-//            // Copy button aligned to the right of the HStack
-//            Button(action: {
-//                if let textMessage = message as? Message {
-//                    copyToClipboard(textMessage.text)
-//                }
-//            }) {
-//                Image(systemName: "doc.on.doc")
-//                    .foregroundColor(.gray)
-//                    .padding(8)
-//                    .background(isPressed ? Color.blue : Color.gray.opacity(0.1))
-//                    .clipShape(Circle())
-//                    .scaleEffect(isPressed ? 1.1 : 1.0)
-//                    .animation(.spring(), value: isPressed)
-//            }
-//            .buttonStyle(PlainButtonStyle())
-//            .onTapGesture {
-//                self.isPressed.toggle()
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//                    self.isPressed = false
-//                }
-//            }
+            // Copy button aligned to the right of the HStack
+            Button(action: {
+                if let textMessage = message as? Message {
+                    copyToClipboard(textMessage.text)
+                }
+            }) {
+                Image(systemName: "doc.on.doc")
+                    .foregroundColor(.gray)
+                    .padding(8)
+                    .background(isPressed ? Color.blue : Color.gray.opacity(0.1))
+                    .clipShape(Circle())
+                    .scaleEffect(isPressed ? 1.1 : 1.0)
+                    .animation(.spring(), value: isPressed)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .onTapGesture {
+                self.isPressed.toggle()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.isPressed = false
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading) // Ensure the HStack respects the container size
-        .padding(.trailing, 16) // Add padding to ensure proper spacing from the container edge
     }
 
     @ViewBuilder
