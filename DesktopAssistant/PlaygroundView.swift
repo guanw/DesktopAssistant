@@ -2,11 +2,23 @@ import SwiftUI
 
 struct PlaygroundView: View {
     @ObservedObject var playgroundState : PlaygroundState
+    @StateObject private var monitor = SelectionMonitor()
+
     var body: some View {
         VStack {
             Text("Playground view")
                 .font(.largeTitle)
                 .padding()
+
+            if let contextText = monitor.selectedText, !contextText.isEmpty {
+                Text("Selected Text: \(contextText)")
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(10)
+            } else {
+                Text("No text selected.")
+                    .foregroundColor(.gray)
+            }
 
             Button(action: {
                 testLlamaClient()
@@ -26,6 +38,12 @@ struct PlaygroundView: View {
             }
             .buttonStyle(BorderlessButtonStyle())
         }.frame(width: Constants.CHAT_WIDTH, height: 400)
+        .onAppear {
+            monitor.startMonitoring()
+        }
+        .onDisappear {
+            monitor.stopMonitoring()
+        }
 
     }
 

@@ -21,9 +21,22 @@
 		63AE3F712CE689E200324A50 /* DesktopAssistantTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DesktopAssistantTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		63F70BA02D4088FD00316B64 /* Exceptions for "DesktopAssistant" folder in "Copy Bundle Resources" phase from "DesktopAssistant" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 63AE3F262CE1795700324A50 /* Resources */;
+			membershipExceptions = (
+				SelectedTextUtils.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		63AE3F2A2CE1795700324A50 /* DesktopAssistant */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				63F70BA02D4088FD00316B64 /* Exceptions for "DesktopAssistant" folder in "Copy Bundle Resources" phase from "DesktopAssistant" target */,
+			);
 			path = DesktopAssistant;
 			sourceTree = "<group>";
 		};

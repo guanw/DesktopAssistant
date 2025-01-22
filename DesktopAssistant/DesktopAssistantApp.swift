@@ -26,6 +26,7 @@ struct DesktopAssistantApp: App {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    var monitoringTimer: Timer?
     private var groqApiKeyWindow: NSWindow?
     private var notificationCenterWindow: NSWindow?
     var hotKeyRef: EventHotKeyRef?
@@ -43,6 +44,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         registerHotKey()
         setupHotKeyHandler()
+
+        let isTrusted = AXIsProcessTrustedWithOptions([
+            kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true
+        ] as CFDictionary)
+
+        if isTrusted {
+            startMonitoring()
+        } else {
+            print("Accessibility permissions not granted.")
+        }
+    }
+
+    func startMonitoring() {
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            SelectedTextUtils.getSelectedTextFromPasteBoard()
+        }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        monitoringTimer?.invalidate()
     }
 
 
