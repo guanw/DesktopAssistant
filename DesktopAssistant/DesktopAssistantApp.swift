@@ -26,7 +26,7 @@ struct DesktopAssistantApp: App {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    var monitoringTimer: Timer?
+    var monitoringPasteBoardTimer: Timer?
     private var groqApiKeyWindow: NSWindow?
     private var notificationCenterWindow: NSWindow?
     var hotKeyRef: EventHotKeyRef?
@@ -45,28 +45,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         registerHotKey()
         setupHotKeyHandler()
 
-        let isTrusted = AXIsProcessTrustedWithOptions([
-            kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true
-        ] as CFDictionary)
-
-        if isTrusted {
-            startMonitoring()
-        } else {
-            Logger.shared.log("Accessibility permissions not granted.")
-        }
+        startMonitoringPasteBoard()
     }
 
-    func startMonitoring() {
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            SelectedTextUtils.getSelectedTextFromPasteBoard()
+    func startMonitoringPasteBoard() {
+        monitoringPasteBoardTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            ChatState.shared.pasteBoardText = SelectedTextUtils
+                .getSelectedTextFromPasteBoard() ?? ""
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        monitoringTimer?.invalidate()
+        monitoringPasteBoardTimer?.invalidate()
     }
-
-
 
     func registerHotKey() {
         guard let signature = FourCharCode("htk1") else {
