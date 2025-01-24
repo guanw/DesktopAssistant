@@ -10,7 +10,7 @@ struct DesktopAssistantApp: App {
         // Single-instance check
         let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
         if runningApps.count > 1 {
-            print("Another instance is already running. Exiting...")
+            Logger.shared.log("Another instance is already running. Exiting...")
             exit(0)
         }
 
@@ -52,7 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if isTrusted {
             startMonitoring()
         } else {
-            print("Accessibility permissions not granted.")
+            Logger.shared.log("Accessibility permissions not granted.")
         }
     }
 
