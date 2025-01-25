@@ -125,7 +125,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let toggleTransformResponseToAudio = NSMenuItem(
             title: "Audio output",
             action: #selector(toggleAudioOutput),
-            keyEquivalent: "a"
+            keyEquivalent: "o"
         )
         toggleTransformResponseToAudio.state = AppState.shared.shouldTranscribeToAudio ? .on: .off
         let newPlaygroundItem = NSMenuItem(title: "New playground", action: #selector(openPlaygroundWindow), keyEquivalent: "p")
@@ -137,6 +137,48 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         desktopAssistantMenu.addItem(toggleTransformResponseToAudio)
         desktopAssistantMenu.addItem(NSMenuItem.separator())
         desktopAssistantMenu.addItem(newPlaygroundItem)
+
+        // --- Add the Edit Menu ---
+        let editMenu = NSMenu(title: "Edit")
+        let editMenuItem = NSMenuItem()
+        editMenuItem.submenu = editMenu
+        mainMenu.addItem(editMenuItem)
+
+        // Copy Action
+        let copyItem = NSMenuItem(
+            title: "Copy",
+            action: #selector(NSText.copy(_:)),
+            keyEquivalent: "c"
+        )
+        copyItem.keyEquivalentModifierMask = .command
+        editMenu.addItem(copyItem)
+
+        // Paste Action
+        let pasteItem = NSMenuItem(
+            title: "Paste",
+            action: #selector(NSText.paste(_:)),
+            keyEquivalent: "v"
+        )
+        pasteItem.keyEquivalentModifierMask = .command
+        editMenu.addItem(pasteItem)
+
+        // Cut Action
+        let cutItem = NSMenuItem(
+            title: "Cut",
+            action: #selector(NSText.cut(_:)),
+            keyEquivalent: "x"
+        )
+        cutItem.keyEquivalentModifierMask = .command
+        editMenu.addItem(cutItem)
+
+        // Select All Action
+        let selectAllItem = NSMenuItem(
+            title: "Select All",
+            action: #selector(NSText.selectAll(_:)),
+            keyEquivalent: "a"
+        )
+        selectAllItem.keyEquivalentModifierMask = .command
+        editMenu.addItem(selectAllItem)
 
         NSApp.mainMenu = mainMenu
     }
