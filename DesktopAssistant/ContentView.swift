@@ -130,7 +130,7 @@ struct ContentView: View {
             if (!ChatState.shared.pasteBoardText.isEmpty) {
                 ChatState.shared.messages.append(.message(Message(text: ChatState.shared.pasteBoardText, role: .User)))
             }
-        } else if model == MULTI_MODAL_MODEL {
+        } else {
             var content = [MultiModalMessageContent(text: transcribedText)]
             if let selectedFileUrl = ImageState.shared.selectedFileUrl {
                 let imageUrl = ImageUtil.encodeImageToBase64(
