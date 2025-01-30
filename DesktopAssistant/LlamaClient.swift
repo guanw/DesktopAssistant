@@ -15,7 +15,7 @@ class LlamaClient {
         guard !prompt.isEmpty else { return }
 
         // Create the request payload
-        let requestBody = GenerateRequest(model: "llama3.2", prompt: prompt)
+        let requestBody = GenerateRequest(model: "deepseek-r1:8b", prompt: prompt)
 
         // Convert the payload to JSON data
         guard let jsonData = try? JSONEncoder().encode(requestBody) else {
