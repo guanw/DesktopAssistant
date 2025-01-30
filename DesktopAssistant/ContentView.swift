@@ -127,7 +127,9 @@ struct ContentView: View {
     static func createInput(transcribedText: String) {
         if model == STABLE_MODEL {
             ChatState.shared.messages.append(.message(Message(text: transcribedText, role: .User)))
-            if (!ChatState.shared.pasteBoardText.isEmpty) {
+            if (
+                AppState.shared.shouldEnablePasteBoard && !ChatState.shared.pasteBoardText.isEmpty
+            ) {
                 ChatState.shared.messages.append(.message(Message(text: ChatState.shared.pasteBoardText, role: .User)))
             }
         } else {
@@ -149,7 +151,7 @@ struct ContentView: View {
                     MultiModalMessage(role: .User, content: content)
                 )
             )
-            if (!ChatState.shared.pasteBoardText.isEmpty) {
+            if (AppState.shared.shouldEnablePasteBoard && !ChatState.shared.pasteBoardText.isEmpty) {
                 let content = [MultiModalMessageContent(text: ChatState.shared.pasteBoardText)]
                 ChatState.shared.messages.append(.multiModalMessage(MultiModalMessage(role: .User, content: content)))
             }

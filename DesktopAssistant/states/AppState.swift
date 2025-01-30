@@ -9,6 +9,7 @@ class AppState: ObservableObject {
     static let shared = AppState()
     var groqApiClient: GroqAPIClient = GroqAPIClient(apiKey: "", model: model)
     var shouldTranscribeToAudio = true
+    var shouldEnablePasteBoard = false
     @Published var selectedModel: String = "Ollama"
 }
 

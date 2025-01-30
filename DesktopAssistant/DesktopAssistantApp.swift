@@ -128,6 +128,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             keyEquivalent: "o"
         )
         toggleTransformResponseToAudio.state = AppState.shared.shouldTranscribeToAudio ? .on: .off
+
+        let toggleEnablePasteBoard = NSMenuItem(
+            title: "Enable paste board",
+            action: #selector(toggleEnablePasteBoard),
+            keyEquivalent: "p"
+        )
+//        toggleTransformResponseToAudio.state = AppState.shared.shouldTranscribeToAudio ? .on: .off
+
         let newPlaygroundItem = NSMenuItem(title: "New playground", action: #selector(openPlaygroundWindow), keyEquivalent: "p")
 
 
@@ -135,6 +143,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         desktopAssistantMenu.addItem(setUpGroqApiKey)
         desktopAssistantMenu.addItem(notificationCenter)
         desktopAssistantMenu.addItem(toggleTransformResponseToAudio)
+        desktopAssistantMenu.addItem(toggleEnablePasteBoard)
         desktopAssistantMenu.addItem(NSMenuItem.separator())
         desktopAssistantMenu.addItem(newPlaygroundItem)
 
@@ -277,6 +286,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func toggleAudioOutput(_ sender: NSMenuItem) {
         AppState.shared.shouldTranscribeToAudio.toggle()
         sender.state = AppState.shared.shouldTranscribeToAudio ? .on : .off
+    }
+
+    @objc func toggleEnablePasteBoard(_ sender: NSMenuItem) {
+        AppState.shared.shouldEnablePasteBoard.toggle()
     }
 }
 
