@@ -1,8 +1,21 @@
 import AVFoundation
+import Cocoa
+
 
 class TextToSpeech {
     static let shared = TextToSpeech()
     private var synthesizer = AVSpeechSynthesizer()
+
+    init() {
+        // Set up global event monitoring for the Escape key
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if event.keyCode == 53 { // 53 is the keyCode for the Escape key
+                self.stop()
+                return nil // Swallow the event so it doesn't propagate
+            }
+            return event
+        }
+    }
 
     func speak(_ text: String) {
         if (!AppState.shared.shouldTranscribeToAudio) {

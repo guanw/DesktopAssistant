@@ -286,6 +286,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func toggleAudioOutput(_ sender: NSMenuItem) {
         AppState.shared.shouldTranscribeToAudio.toggle()
         sender.state = AppState.shared.shouldTranscribeToAudio ? .on : .off
+
+        if (sender.state == .off) {
+            TextToSpeech.shared.stop()
+        }
     }
 
     @objc func toggleEnablePasteBoard(_ sender: NSMenuItem) {
