@@ -51,27 +51,71 @@ struct ContentView: View {
         if (!transcribedText.isEmpty) {
             ContentView.createInput(transcribedText: transcribedText)
             ChatState.shared.waitingForReply = true;
-            AppState.shared.groqApiClient
-                .sendChatCompletionRequest(
-                    messages: ChatState.shared.messages,
-                    latestMessage: transcribedText
-                ) { result in
-                switch result {
-                case .success(let result):
-                    self.parseSuccessReply(messages: ChatState.shared.messages, result: result, transcribedText: transcribedText)
-                case .failure(let error):
+            if (AppState.shared.selectedModel == "Ollama") {
+                // use Ollama as backend
+                // TODO enable chat history to prompt
+                AppState.shared.ollamaClient
+                    .sendGenerateRequest(prompt: transcribedText) { result in
+                    switch result {
+                    case .success(let data):
+                        guard let responseString = String(data: data, encoding: .utf8) else {
+                            Logger.shared.log("Failed to convert data to string")
+                            return
+                        }
+                        let jsonStrings = responseString.split(separator: "\n")
+
+                        var concatenatedResponse = ""
+
+                        for jsonString in jsonStrings {
+                            // Convert each JSON string back to Data for decoding
+                            if let jsonData = jsonString.data(using: .utf8) {
+                                do {
+                                    // Decode the JSON string into an OllamaSingleResponse
+                                    let singleResponse = try JSONDecoder().decode(OllamaSingleResponse.self, from: jsonData)
+                                    // Append the `response` field to the result
+                                    concatenatedResponse += singleResponse.response
+                                } catch {
+                                    Logger.shared.log("Failed to decode JSON object: \(error)")
+                                }
+                            }
+                        }
+                        DispatchQueue.main.async {
+                            self.parseSuccessReply(messages: ChatState.shared.messages, result: concatenatedResponse, transcribedText: transcribedText)
+                        }
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            ChatState.shared.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
+                        }
+                    }
+                    // reset
                     DispatchQueue.main.async {
-                        ChatState.shared.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
+                        ChatState.shared.waitingForReply = false;
+                        ChatState.shared.transcribedText = ""
                     }
                 }
+            } else {
+                // use groq api as backend
+                AppState.shared.groqApiClient
+                    .sendChatCompletionRequest(
+                        messages: ChatState.shared.messages,
+                        latestMessage: transcribedText
+                    ) { result in
+                    switch result {
+                    case .success(let result):
+                        self.parseSuccessReply(messages: ChatState.shared.messages, result: result, transcribedText: transcribedText)
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            ChatState.shared.messages.append(.message(Message(text: "Error: \(error)", role: .System)))
+                        }
+                    }
 
-                // reset
-                DispatchQueue.main.async {
-                    ChatState.shared.waitingForReply = false;
-                    ChatState.shared.transcribedText = ""
+                    self.cleanupTempScreenshotFile()
+                    // reset
+                    DispatchQueue.main.async {
+                        ChatState.shared.waitingForReply = false;
+                        ChatState.shared.transcribedText = ""
+                    }
                 }
-
-                self.cleanupTempScreenshotFile()
             }
         }
     }

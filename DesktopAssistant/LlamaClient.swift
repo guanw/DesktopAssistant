@@ -61,7 +61,7 @@ class LlamaClient {
         return
     }
 
-    init() throws {
+    init() {
         // Define the server endpoint
         let urlString = "http://127.0.0.1:11434/api/generate"
         // Safely unwrap the URL constructed from the urlString

@@ -8,6 +8,7 @@ let model = DEEPSEEK_MODEL
 class AppState: ObservableObject {
     static let shared = AppState()
     var groqApiClient: GroqAPIClient = GroqAPIClient(apiKey: "", model: model)
+    var ollamaClient: LlamaClient = LlamaClient()
     var shouldTranscribeToAudio = true
     var shouldEnablePasteBoard = false
     @Published var selectedModel: String = "Ollama"
