@@ -1,6 +1,8 @@
 import SwiftUI
 import Carbon
 import AVFoundation
+import Foundation
+import UserNotifications
 
 @main
 struct DesktopAssistantApp: App {
@@ -127,6 +129,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(toggleAudioOutput),
             keyEquivalent: "o"
         )
+        let clearAllNotifications = NSMenuItem(
+            title: "Clear all notifications",
+            action: #selector(clearAllNotifications),
+            keyEquivalent: "c"
+        )
         toggleTransformResponseToAudio.state = AppState.shared.shouldTranscribeToAudio ? .on: .off
 
         let toggleEnablePasteBoard = NSMenuItem(
@@ -144,6 +151,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         desktopAssistantMenu.addItem(notificationCenter)
         desktopAssistantMenu.addItem(toggleTransformResponseToAudio)
         desktopAssistantMenu.addItem(toggleEnablePasteBoard)
+        desktopAssistantMenu.addItem(clearAllNotifications)
         desktopAssistantMenu.addItem(NSMenuItem.separator())
         desktopAssistantMenu.addItem(newPlaygroundItem)
 
@@ -294,6 +302,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func toggleEnablePasteBoard(_ sender: NSMenuItem) {
         AppState.shared.shouldEnablePasteBoard.toggle()
+    }
+
+    @objc func clearAllNotifications(_ sender: NSMenuItem) {
+        let center = UNUserNotificationCenter.current()
+
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+
+        Logger.shared.log("Cleared all scheduled and delivered notifications.")
+
     }
 }
 
