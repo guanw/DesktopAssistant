@@ -312,6 +312,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         Logger.shared.log("Cleared all scheduled and delivered notifications.")
 
+        Logger.shared.log("test")
     }
 }
 
